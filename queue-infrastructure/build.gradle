@@ -1,0 +1,8 @@
+dependencies {
+    implementation project(':queue-domain')
+    implementation project(':queue-application')
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.kafka:spring-kafka'
+}
