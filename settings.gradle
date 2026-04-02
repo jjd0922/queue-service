@@ -1,0 +1,12 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "queue-service"
+include("queue-domain")
+include("queue-application")
+include("queue-infrastructure")
+include("queue-api")
