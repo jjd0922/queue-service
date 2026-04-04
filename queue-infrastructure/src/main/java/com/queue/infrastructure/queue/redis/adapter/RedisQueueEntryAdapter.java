@@ -23,7 +23,7 @@ public class RedisQueueEntryAdapter implements QueueEntryQueryPort, QueueEntryCo
         String entryKey = RedisQueueKeyFactory.entryKey(queueId, token);
         Map<Object, Object> hash = redisTemplate.opsForHash().entries(entryKey);
 
-        if (hash == null || hash.isEmpty()) {
+        if (hash.isEmpty()) {
             return Optional.empty();
         }
 
