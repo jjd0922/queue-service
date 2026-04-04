@@ -1,7 +1,7 @@
 package com.queue.infrastructure.redis.queue;
 
-import com.queue.domain.queue.model.QueueEntry;
-import com.queue.domain.queue.model.QueueStatus;
+import com.queue.domain.model.QueueEntry;
+import com.queue.domain.model.QueueStatus;
 import com.queue.infrastructure.queue.redis.RedisQueueEntryMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

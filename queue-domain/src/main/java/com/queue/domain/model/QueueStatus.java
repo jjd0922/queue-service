@@ -1,4 +1,4 @@
-package com.queue.domain.queue.model;
+package com.queue.domain.model;
 
 public enum QueueStatus {
     WAITING,

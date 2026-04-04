@@ -1,6 +1,6 @@
 package com.queue.application.port.out;
 
-import com.queue.domain.queue.model.QueueEntry;
+import com.queue.domain.model.QueueEntry;
 
 public interface QueueCommandPort {
     long nextSequence(String queueId);

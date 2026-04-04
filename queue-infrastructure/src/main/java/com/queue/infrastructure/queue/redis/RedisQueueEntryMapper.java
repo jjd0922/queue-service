@@ -1,7 +1,7 @@
 package com.queue.infrastructure.queue.redis;
 
-import com.queue.domain.queue.model.QueueEntry;
-import com.queue.domain.queue.model.QueueStatus;
+import com.queue.domain.model.QueueEntry;
+import com.queue.domain.model.QueueStatus;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;

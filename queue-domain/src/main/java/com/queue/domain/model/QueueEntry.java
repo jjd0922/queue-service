@@ -1,4 +1,4 @@
-package com.queue.domain.queue.model;
+package com.queue.domain.model;
 
 import java.time.Instant;
 import java.util.Objects;

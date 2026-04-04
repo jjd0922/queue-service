@@ -1,5 +1,7 @@
 package com.queue.domain.queue.model;
 
+import com.queue.domain.model.QueueEntry;
+import com.queue.domain.model.QueueStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

@@ -2,7 +2,7 @@ package com.queue.infrastructure.queue.redis;
 
 import com.queue.application.port.out.QueueCommandPort;
 import com.queue.application.port.out.QueueQueryPort;
-import com.queue.domain.queue.model.QueueEntry;
+import com.queue.domain.model.QueueEntry;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
