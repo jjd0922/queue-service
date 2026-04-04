@@ -1,4 +1,4 @@
-package com.queue.infrastructure.queue.redis;
+package com.queue.infrastructure.queue.redis.key;
 
 public class RedisQueueKeyFactory {
 

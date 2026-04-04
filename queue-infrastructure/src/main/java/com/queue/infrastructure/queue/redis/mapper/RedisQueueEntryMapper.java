@@ -1,4 +1,4 @@
-package com.queue.infrastructure.queue.redis;
+package com.queue.infrastructure.queue.redis.mapper;
 
 import com.queue.domain.model.QueueEntry;
 import com.queue.domain.model.QueueStatus;
