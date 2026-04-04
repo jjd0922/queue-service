@@ -1,6 +1,5 @@
-package com.queue.infrastructure.queue.redis;
+package com.queue.infrastructure.queue.redis.key;
 
-import com.queue.infrastructure.queue.redis.key.RedisQueueKeyFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
