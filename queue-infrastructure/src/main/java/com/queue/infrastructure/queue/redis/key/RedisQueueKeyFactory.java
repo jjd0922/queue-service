@@ -1,6 +1,6 @@
 package com.queue.infrastructure.queue.redis.key;
 
-public class RedisQueueKeyFactory {
+public final class RedisQueueKeyFactory {
 
     private static final String PREFIX = "queue:v1";
 
