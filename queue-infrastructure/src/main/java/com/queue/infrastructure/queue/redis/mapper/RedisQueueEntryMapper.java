@@ -1,7 +1,7 @@
 package com.queue.infrastructure.queue.redis.mapper;
 
 import com.queue.domain.model.QueueEntry;
-import com.queue.domain.model.QueueStatus;
+import com.queue.domain.model.QueueEntryStatus;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -47,7 +47,7 @@ public final class RedisQueueEntryMapper {
         String token = requiredText(source, TOKEN);
         String queueId = requiredText(source, QUEUE_ID);
         Long userId = requiredLong(source, USER_ID);
-        QueueStatus status = QueueStatus.valueOf(requiredText(source, STATUS));
+        QueueEntryStatus status = QueueEntryStatus.valueOf(requiredText(source, STATUS));
         Long sequence = requiredLong(source, SEQUENCE);
         Instant enteredAt = requiredInstant(source, ENTERED_AT);
         Instant activatedAt = optionalInstant(source, ACTIVATED_AT);
