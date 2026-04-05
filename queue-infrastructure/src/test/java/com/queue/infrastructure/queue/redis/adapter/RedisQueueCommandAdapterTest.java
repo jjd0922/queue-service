@@ -5,6 +5,7 @@ import com.queue.application.port.out.QueueCommandPort;
 import com.queue.domain.model.EnqueueDecision;
 import com.queue.infrastructure.config.RedisQueueScriptConfig;
 import com.queue.infrastructure.queue.redis.generator.RedisQueueKeyGenerator;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -63,6 +64,7 @@ class RedisQueueCommandAdapterTest {
 
     @BeforeEach
     void clear() {
+        Assertions.assertNotNull(stringRedisTemplate.getConnectionFactory());
         stringRedisTemplate.getConnectionFactory()
                 .getConnection()
                 .serverCommands()
@@ -235,6 +237,6 @@ class RedisQueueCommandAdapterTest {
 
         assertThat(createdCount).isEqualTo(threadCount);
         assertThat(distinctTokenCount).isEqualTo(threadCount);
-        assertThat(zsetSize).isEqualTo((long) threadCount);
+        assertThat(zsetSize).isEqualTo(threadCount);
     }
 }

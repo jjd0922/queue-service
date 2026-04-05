@@ -1,7 +1,6 @@
 package com.queue.application.dto;
 
 import com.queue.domain.model.EnqueueDecision;
-import com.queue.domain.model.QueueEntry;
 
 import java.time.Instant;
 
