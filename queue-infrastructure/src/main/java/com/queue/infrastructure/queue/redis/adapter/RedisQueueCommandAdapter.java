@@ -1,6 +1,6 @@
 package com.queue.infrastructure.queue.redis.adapter;
 
-import com.queue.application.dto.EnqueueRequest;
+import com.queue.application.dto.EnqueueCommand;
 import com.queue.application.port.out.QueueCommandPort;
 import com.queue.domain.model.EnqueueDecision;
 import com.queue.domain.model.EnqueueOutcome;
@@ -25,7 +25,7 @@ public class RedisQueueCommandAdapter implements QueueCommandPort {
     private final RedisQueueKeyGenerator keyGenerator;
 
     @Override
-    public EnqueueDecision enqueueOrGetExisting(EnqueueRequest request) {
+    public EnqueueDecision enqueueOrGetExisting(EnqueueCommand request) {
         Instant now = request.requestedAt();
         String token = UUID.randomUUID().toString();
 
@@ -55,7 +55,7 @@ public class RedisQueueCommandAdapter implements QueueCommandPort {
         return mapResult(request, result);
     }
 
-    private EnqueueDecision mapResult(EnqueueRequest request, List<?> result) {
+    private EnqueueDecision mapResult(EnqueueCommand request, List<?> result) {
         if (result == null || result.size() < 8) {
             throw new IllegalStateException("Redis enqueue script returned invalid result.");
         }

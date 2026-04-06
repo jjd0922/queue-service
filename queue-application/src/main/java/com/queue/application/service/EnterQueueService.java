@@ -22,7 +22,7 @@ public class EnterQueueService implements EnterQueueUseCase {
     @Override
     public EnterQueueResult enter(EnterQueueCommand command) {
         EnqueueDecision decision = queueCommandPort.enqueueOrGetExisting(
-                new EnqueueRequest(
+                new EnqueueCommand(
                         command.queueId(),
                         command.userId(),
                         Instant.now(clock)

@@ -1,6 +1,6 @@
 package com.queue.infrastructure.queue.redis.adapter;
 
-import com.queue.application.dto.EnqueueRequest;
+import com.queue.application.dto.EnqueueCommand;
 import com.queue.application.port.out.QueueCommandPort;
 import com.queue.domain.model.EnqueueDecision;
 import com.queue.infrastructure.config.RedisQueueScriptConfig;
@@ -73,13 +73,13 @@ class RedisQueueCommandAdapterTest {
 
     @Test
     void enqueueOrGetExisting_whenSameUserRetries_thenSingleEntryOnly() {
-        EnqueueRequest first = new EnqueueRequest(
+        EnqueueCommand first = new EnqueueCommand(
                 "queue-1",
                 1L,
                 Instant.parse("2026-04-05T00:00:00Z")
         );
 
-        EnqueueRequest second = new EnqueueRequest(
+        EnqueueCommand second = new EnqueueCommand(
                 "queue-1",
                 1L,
                 Instant.parse("2026-04-05T00:00:01Z")
@@ -108,7 +108,7 @@ class RedisQueueCommandAdapterTest {
         );
 
         EnqueueDecision result = queueCommandPort.enqueueOrGetExisting(
-                new EnqueueRequest(
+                new EnqueueCommand(
                         "queue-1",
                         1L,
                         Instant.parse("2026-04-05T00:00:00Z")
@@ -127,15 +127,15 @@ class RedisQueueCommandAdapterTest {
     @Test
     void enqueueOrGetExisting_whenMultipleUsersSequentially_thenSequenceIncreases() {
         EnqueueDecision first = queueCommandPort.enqueueOrGetExisting(
-                new EnqueueRequest("queue-1", 1L, Instant.parse("2026-04-05T00:00:00Z"))
+                new EnqueueCommand("queue-1", 1L, Instant.parse("2026-04-05T00:00:00Z"))
         );
 
         EnqueueDecision second = queueCommandPort.enqueueOrGetExisting(
-                new EnqueueRequest("queue-1", 2L, Instant.parse("2026-04-05T00:00:01Z"))
+                new EnqueueCommand("queue-1", 2L, Instant.parse("2026-04-05T00:00:01Z"))
         );
 
         EnqueueDecision third = queueCommandPort.enqueueOrGetExisting(
-                new EnqueueRequest("queue-1", 3L, Instant.parse("2026-04-05T00:00:02Z"))
+                new EnqueueCommand("queue-1", 3L, Instant.parse("2026-04-05T00:00:02Z"))
         );
 
         assertThat(first.entry().getSequence()).isEqualTo(1L);
@@ -159,7 +159,7 @@ class RedisQueueCommandAdapterTest {
                 start.await();
 
                 return queueCommandPort.enqueueOrGetExisting(
-                        new EnqueueRequest("queue-1", 1L, Instant.now())
+                        new EnqueueCommand("queue-1", 1L, Instant.now())
                 );
             }));
         }
@@ -208,7 +208,7 @@ class RedisQueueCommandAdapterTest {
                 start.await();
 
                 return queueCommandPort.enqueueOrGetExisting(
-                        new EnqueueRequest("queue-1", userId, Instant.now())
+                        new EnqueueCommand("queue-1", userId, Instant.now())
                 );
             }));
         }
