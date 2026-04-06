@@ -1,5 +1,8 @@
 package com.queue.domain.exception;
 
+import lombok.Getter;
+
+@Getter
 public class QueueException extends RuntimeException{
 
     private final QueueErrorCode errorCode;
@@ -9,7 +12,4 @@ public class QueueException extends RuntimeException{
         this.errorCode = errorCode;
     }
 
-    public QueueErrorCode getErrorCode() {
-        return errorCode;
-    }
 }
