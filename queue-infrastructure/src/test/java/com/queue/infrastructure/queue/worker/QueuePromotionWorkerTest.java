@@ -2,6 +2,7 @@ package com.queue.infrastructure.queue.worker;
 
 import com.queue.application.dto.PromoteResult;
 import com.queue.application.port.in.PromoteQueueEntriesUseCase;
+import com.queue.infrastructure.queue.redis.worker.QueuePromotionWorker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
