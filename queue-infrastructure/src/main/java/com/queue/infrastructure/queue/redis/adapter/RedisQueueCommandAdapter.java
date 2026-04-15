@@ -1,8 +1,6 @@
 package com.queue.infrastructure.queue.redis.adapter;
 
-import com.queue.application.dto.EnqueueCommand;
-import com.queue.application.dto.PromoteCommand;
-import com.queue.application.dto.PromoteResult;
+import com.queue.application.dto.*;
 import com.queue.application.port.out.QueueCommandPort;
 import com.queue.domain.model.EnqueueDecision;
 import com.queue.domain.model.EnqueueOutcome;
@@ -25,6 +23,7 @@ public class RedisQueueCommandAdapter implements QueueCommandPort {
     private final StringRedisTemplate stringRedisTemplate;
     private final RedisScript<List> enqueueOrGetExistingScript;
     private final RedisScript<Long> promoteWaitingEntriesScript;
+    private final RedisScript<Long> expireActiveEntriesScript;
     private final RedisQueueKeyGenerator keyGenerator;
 
     @Override
@@ -93,6 +92,40 @@ public class RedisQueueCommandAdapter implements QueueCommandPort {
                 actualPromotedCount
         );
     }
+
+    @Override
+    public ExpireResult expireActiveEntries(ExpireCommand request) {
+        Instant now = request.requestedAt();
+
+        List<String> keys = List.of(
+                keyGenerator.activeExpiryKey(request.queueId()),
+                keyGenerator.activeQueueKey(request.queueId())
+        );
+
+        List<String> args = List.of(
+                keyGenerator.entryKeyPrefix(),
+                QueueEntryStatus.EXPIRED.name(),
+                now.toString(),
+                String.valueOf(now.toEpochMilli()),
+                String.valueOf(request.expireBatchSize()),
+                keyGenerator.userIndexKeyPrefix(request.queueId())
+        );
+
+        Long expiredCount = stringRedisTemplate.execute(
+                expireActiveEntriesScript,
+                keys,
+                args.toArray()
+        );
+
+        int actualExpiredCount = expiredCount == null ? 0 : expiredCount.intValue();
+
+        return new ExpireResult(
+                request.queueId(),
+                request.expireBatchSize(),
+                actualExpiredCount
+        );
+    }
+
 
     private EnqueueDecision mapResult(EnqueueCommand request, List<?> result) {
         if (result == null || result.size() < 8) {
