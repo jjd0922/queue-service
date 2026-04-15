@@ -65,7 +65,8 @@ public class RedisQueueCommandAdapter implements QueueCommandPort {
 
         List<String> keys = List.of(
                 keyGenerator.waitingQueueKey(request.queueId()),
-                keyGenerator.activeQueueKey(request.queueId())
+                keyGenerator.activeQueueKey(request.queueId()),
+                keyGenerator.activeExpiryKey(request.queueId())
         );
 
         List<String> args = List.of(
