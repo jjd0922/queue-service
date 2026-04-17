@@ -25,22 +25,12 @@ public class ExpireAndPromoteService implements ExpireAndPromoteUseCase {
         );
 
         int actualExpiredCount = expireResult.actualExpiredCount();
-        if (actualExpiredCount <= 0) {
-            return ExpireAndPromoteResult.of(
-                    command.queueId(),
-                    command.expireBatchSize(),
-                    0,
-                    0,
-                    0
-            );
-        }
-
         PromoteResult promoteResult = queuePromotionCommandPort.promoteWaitingEntries(
                 new PromoteCommand(
                         command.queueId(),
                         command.requestedAt(),
                         command.maxActiveCount(),
-                        actualExpiredCount,
+                        command.promoteBatchSize(),
                         command.activeTtl()
                 )
         );

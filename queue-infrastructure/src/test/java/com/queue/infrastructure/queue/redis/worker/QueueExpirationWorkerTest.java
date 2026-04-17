@@ -68,6 +68,7 @@ class QueueExpirationWorkerTest {
         assertThat(actual.queueId()).isEqualTo("default");
         assertThat(actual.requestedAt()).isEqualTo(Instant.parse("2026-04-16T10:00:00Z"));
         assertThat(actual.expireBatchSize()).isEqualTo(50);
+        assertThat(actual.promoteBatchSize()).isEqualTo(50);
         assertThat(actual.maxActiveCount()).isEqualTo(100);
         assertThat(actual.activeTtl().getSeconds()).isEqualTo(180);
     }
