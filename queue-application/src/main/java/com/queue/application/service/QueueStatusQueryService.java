@@ -1,13 +1,13 @@
 package com.queue.application.service;
 
 import com.queue.application.dto.GetQueueStatusQuery;
+import com.queue.application.dto.QueueStatusResult;
+import com.queue.application.common.exception.BaseException;
+import com.queue.application.common.exception.CommonErrorCode;
 import com.queue.application.port.in.GetQueueStatusUseCase;
 import com.queue.application.port.out.QueueStatusQueryPort;
-import com.queue.domain.exception.QueueErrorCode;
-import com.queue.domain.exception.QueueException;
 import com.queue.domain.model.QueueEntrySnapshot;
 import com.queue.domain.model.QueueEntryStatus;
-import com.queue.application.dto.QueueStatusResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ public class QueueStatusQueryService implements GetQueueStatusUseCase {
     @Override
     public QueueStatusResult getQueueStatus(GetQueueStatusQuery query) {
         QueueEntrySnapshot entry = queueStatusQueryPort.findEntry(query.queueToken())
-                .orElseThrow(() -> new QueueException(QueueErrorCode.QUEUE_ENTRY_NOT_FOUND));
+                .orElseThrow(() -> new BaseException(CommonErrorCode.NOT_FOUND));
 
         boolean active = queueStatusQueryPort.isActive(query.queueName(), query.queueToken());
         if (active) {
@@ -49,6 +49,6 @@ public class QueueStatusQueryService implements GetQueueStatusUseCase {
                         entry.activatedAt(),
                         entry.expiresAt()
                 ))
-                .orElseThrow(() -> new QueueException(QueueErrorCode.QUEUE_ENTRY_NOT_FOUND));
+                .orElseThrow(() -> new BaseException(CommonErrorCode.NOT_FOUND));
     }
 }
