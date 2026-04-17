@@ -1,10 +1,10 @@
 package com.queue.application.service;
 
-import com.queue.application.dto.ExpireActiveTokensCommand;
-import com.queue.application.dto.ExpireActiveTokensResult;
+import com.queue.application.dto.*;
 import com.queue.application.port.in.ExpireActiveTokensUseCase;
 import com.queue.application.port.in.PromoteWaitingQueueUseCase;
 import com.queue.application.port.out.QueueExpirationCommandPort;
+import com.queue.application.port.out.QueuePromotionCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,23 +16,45 @@ import java.time.Instant;
 public class ExpireActiveTokensService implements ExpireActiveTokensUseCase {
 
     private final QueueExpirationCommandPort queueExpirationCommandPort;
-    private final PromoteWaitingQueueUseCase promoteWaitingQueueUseCase;
-    private final Clock clock;
+    private final QueuePromotionCommandPort queuePromotionCommandPort;
 
     @Override
-    public ExpireActiveTokensResult expire(ExpireActiveTokensCommand command) {
-        Instant now = Instant.now(clock);
+    public ExpireAndPromoteResult execute(ExpireAndPromoteCommand command) {
+        ExpireResult expireResult = queueExpirationCommandPort.expireActiveEntries(
+                new ExpireCommand(
+                        command.queueId(),
+                        command.requestedAt(),
+                        command.expireBatchSize()
+                )
+        );
 
-        long expiredCount = queueExpirationCommandPort.expireActiveTokens(now, command.batchSize());
-
-        int promotedCount = 0;
-        if (expiredCount > 0) {
-            int requestedCount = expiredCount > Integer.MAX_VALUE
-                    ? Integer.MAX_VALUE
-                    : (int) expiredCount;
-            promotedCount = promoteWaitingQueueUseCase.promote(requestedCount);
+        int actualExpiredCount = expireResult.actualExpiredCount();
+        if (actualExpiredCount <= 0) {
+            return ExpireAndPromoteResult.of(
+                    command.queueId(),
+                    command.expireBatchSize(),
+                    0,
+                    0,
+                    0
+            );
         }
 
-        return ExpireActiveTokensResult.of(expiredCount, promotedCount);
+        PromoteResult promoteResult = queuePromotionCommandPort.promoteWaitingEntries(
+                new PromoteCommand(
+                        command.queueId(),
+                        command.requestedAt(),
+                        command.maxActiveCount(),
+                        actualExpiredCount,
+                        command.activeTtl()
+                )
+        );
+
+        return ExpireAndPromoteResult.of(
+                command.queueId(),
+                command.expireBatchSize(),
+                actualExpiredCount,
+                promoteResult.requestedCount(),
+                promoteResult.promotedCount()
+        );
     }
 }

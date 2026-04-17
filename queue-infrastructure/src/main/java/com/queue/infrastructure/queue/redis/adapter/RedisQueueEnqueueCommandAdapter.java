@@ -1,7 +1,7 @@
 package com.queue.infrastructure.queue.redis.adapter;
 
-import com.queue.application.dto.*;
-import com.queue.application.port.out.QueueCommandPort;
+import com.queue.application.dto.EnqueueCommand;
+import com.queue.application.port.out.QueueEnqueueCommandPort;
 import com.queue.domain.model.EnqueueDecision;
 import com.queue.domain.model.EnqueueOutcome;
 import com.queue.domain.model.QueueEntry;
@@ -18,12 +18,10 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Component
-public class RedisQueueCommandAdapter implements QueueCommandPort {
+public class RedisQueueEnqueueCommandAdapter implements QueueEnqueueCommandPort {
 
     private final StringRedisTemplate stringRedisTemplate;
     private final RedisScript<List> enqueueOrGetExistingScript;
-    private final RedisScript<Long> promoteWaitingEntriesScript;
-    private final RedisScript<Long> expireActiveEntriesScript;
     private final RedisQueueKeyGenerator keyGenerator;
 
     @Override
@@ -56,76 +54,6 @@ public class RedisQueueCommandAdapter implements QueueCommandPort {
 
         return mapResult(request, result);
     }
-
-    @Override
-    public PromoteResult promoteWaitingEntries(PromoteCommand request) {
-        Instant now = request.requestedAt();
-        Instant expiresAt = now.plus(request.activeTtl());
-
-        List<String> keys = List.of(
-                keyGenerator.waitingQueueKey(request.queueId()),
-                keyGenerator.activeQueueKey(request.queueId()),
-                keyGenerator.activeExpiryKey(request.queueId())
-        );
-
-        List<String> args = List.of(
-                keyGenerator.entryKeyPrefix(),
-                QueueEntryStatus.ACTIVE.name(),
-                now.toString(),
-                expiresAt.toString(),
-                String.valueOf(expiresAt.toEpochMilli()),
-                String.valueOf(request.maxActiveCount()),
-                String.valueOf(request.promoteBatchSize())
-        );
-
-        Long promotedCount = stringRedisTemplate.execute(
-                promoteWaitingEntriesScript,
-                keys,
-                args.toArray()
-        );
-
-        int actualPromotedCount = promotedCount == null ? 0 : promotedCount.intValue();
-
-        return new PromoteResult(
-                request.queueId(),
-                request.promoteBatchSize(),
-                actualPromotedCount
-        );
-    }
-
-    @Override
-    public ExpireResult expireActiveEntries(ExpireCommand request) {
-        Instant now = request.requestedAt();
-
-        List<String> keys = List.of(
-                keyGenerator.activeExpiryKey(request.queueId()),
-                keyGenerator.activeQueueKey(request.queueId())
-        );
-
-        List<String> args = List.of(
-                keyGenerator.entryKeyPrefix(),
-                QueueEntryStatus.EXPIRED.name(),
-                now.toString(),
-                String.valueOf(now.toEpochMilli()),
-                String.valueOf(request.expireBatchSize()),
-                keyGenerator.userIndexKeyPrefix(request.queueId())
-        );
-
-        Long expiredCount = stringRedisTemplate.execute(
-                expireActiveEntriesScript,
-                keys,
-                args.toArray()
-        );
-
-        int actualExpiredCount = expiredCount == null ? 0 : expiredCount.intValue();
-
-        return new ExpireResult(
-                request.queueId(),
-                request.expireBatchSize(),
-                actualExpiredCount
-        );
-    }
-
 
     private EnqueueDecision mapResult(EnqueueCommand request, List<?> result) {
         if (result == null || result.size() < 8) {
@@ -170,9 +98,6 @@ public class RedisQueueCommandAdapter implements QueueCommandPort {
 
     private Instant parseNullableInstant(Object value) {
         String text = stringValue(value);
-        if (text.isBlank()) {
-            return null;
-        }
-        return Instant.parse(text);
+        return text.isBlank() ? null : Instant.parse(text);
     }
 }

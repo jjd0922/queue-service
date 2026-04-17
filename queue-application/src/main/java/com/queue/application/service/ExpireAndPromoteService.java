@@ -2,7 +2,8 @@ package com.queue.application.service;
 
 import com.queue.application.dto.*;
 import com.queue.application.port.in.ExpireAndPromoteUseCase;
-import com.queue.application.port.out.QueueCommandPort;
+import com.queue.application.port.out.QueueExpirationCommandPort;
+import com.queue.application.port.out.QueuePromotionCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,11 +11,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class ExpireAndPromoteService implements ExpireAndPromoteUseCase {
 
-    private final QueueCommandPort queueCommandPort;
+    private final QueuePromotionCommandPort queuePromotionCommandPort;
+    private final QueueExpirationCommandPort queueExpirationCommandPort;
 
     @Override
     public ExpireAndPromoteResult execute(ExpireAndPromoteCommand command) {
-        ExpireResult expireResult = queueCommandPort.expireActiveEntries(
+        ExpireResult expireResult = queueExpirationCommandPort.expireActiveEntries(
                 new ExpireCommand(
                         command.queueId(),
                         command.requestedAt(),
@@ -33,12 +35,12 @@ public class ExpireAndPromoteService implements ExpireAndPromoteUseCase {
             );
         }
 
-        PromoteResult promoteResult = queueCommandPort.promoteWaitingEntries(
+        PromoteResult promoteResult = queuePromotionCommandPort.promoteWaitingEntries(
                 new PromoteCommand(
                         command.queueId(),
                         command.requestedAt(),
-                        actualExpiredCount,
                         command.maxActiveCount(),
+                        actualExpiredCount,
                         command.activeTtl()
                 )
         );

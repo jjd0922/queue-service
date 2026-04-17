@@ -4,32 +4,28 @@ import com.queue.application.config.QueuePromotionProperties;
 import com.queue.application.dto.PromoteCommand;
 import com.queue.application.dto.PromoteResult;
 import com.queue.application.port.in.PromoteQueueEntriesUseCase;
-import com.queue.application.port.out.QueueCommandPort;
+import com.queue.application.port.out.QueuePromotionCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
 public class PromoteQueueEntriesService implements PromoteQueueEntriesUseCase {
 
-    private final QueueCommandPort queueCommandPort;
+    private final QueuePromotionCommandPort queuePromotionCommandPort;
     private final QueuePromotionProperties properties;
 
-    @Override
     public PromoteResult promote() {
-        Instant now = Instant.now();
-
-        PromoteCommand command = new PromoteCommand(
-                properties.getQueueId(),
-                now,
-                properties.getMaxActiveCount(),
-                properties.getBatchSize(),
-                Duration.ofSeconds(properties.getActiveTtlSeconds())
+        return queuePromotionCommandPort.promoteWaitingEntries(
+                new PromoteCommand(
+                        properties.getQueueId(),
+                        Instant.now(),
+                        properties.getMaxActiveCount(),
+                        properties.getBatchSize(),
+                        properties.activeTtl()
+                )
         );
-
-        return queueCommandPort.promoteWaitingEntries(command);
     }
 }

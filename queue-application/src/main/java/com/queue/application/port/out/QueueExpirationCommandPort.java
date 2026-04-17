@@ -1,7 +1,10 @@
 package com.queue.application.port.out;
 
+import com.queue.application.dto.ExpireCommand;
+import com.queue.application.dto.ExpireResult;
+
 import java.time.Instant;
 
 public interface QueueExpirationCommandPort {
-    long expireActiveTokens(Instant now, int batchSize);
+    ExpireResult expireActiveEntries(ExpireCommand request);
 }

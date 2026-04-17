@@ -1,8 +1,8 @@
 package com.queue.application.port.in;
 
-import com.queue.application.dto.ExpireActiveTokensCommand;
-import com.queue.application.dto.ExpireActiveTokensResult;
+import com.queue.application.dto.ExpireAndPromoteCommand;
+import com.queue.application.dto.ExpireAndPromoteResult;
 
 public interface ExpireActiveTokensUseCase {
-    ExpireActiveTokensResult expire(ExpireActiveTokensCommand command);
+    ExpireAndPromoteResult execute(ExpireAndPromoteCommand command);
 }
