@@ -1,9 +1,7 @@
 package com.queue.infrastructure.queue.redis.adapter;
 
 import com.queue.application.dto.EnqueueCommand;
-import com.queue.application.dto.PromoteCommand;
-import com.queue.application.dto.PromoteResult;
-import com.queue.application.port.out.QueueCommandPort;
+import com.queue.application.port.out.QueueEnqueueCommandPort;
 import com.queue.domain.model.EnqueueDecision;
 import com.queue.infrastructure.config.RedisQueueScriptConfig;
 import com.queue.infrastructure.queue.redis.generator.RedisQueueKeyGenerator;
@@ -16,13 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +31,9 @@ import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = RedisQueueCommandAdapterTest.TestConfig.class)
+@SpringBootTest(classes = RedisQueueEnqueueCommandAdapterTest.TestConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class RedisQueueCommandAdapterTest {
+class RedisQueueEnqueueCommandAdapterTest {
 
     private static final GenericContainer<?> redis =
             new GenericContainer<>("redis:7.2-alpine").withExposedPorts(6379);
@@ -50,7 +51,7 @@ class RedisQueueCommandAdapterTest {
     @SpringBootConfiguration
     @EnableAutoConfiguration
     @Import({
-            RedisQueueCommandAdapter.class,
+            RedisQueueEnqueueCommandAdapter.class,
             RedisQueueScriptConfig.class,
             RedisQueueKeyGenerator.class
     })
@@ -58,7 +59,7 @@ class RedisQueueCommandAdapterTest {
     }
 
     @Autowired
-    private QueueCommandPort queueCommandPort;
+    private QueueEnqueueCommandPort queueEnqueueCommandPort;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -78,20 +79,11 @@ class RedisQueueCommandAdapterTest {
     @DisplayName("동일 사용자가 재시도하면 하나의 엔트리만 생성된다")
     @Test
     void enqueueOrGetExisting_whenSameUserRetries_thenSingleEntryOnly() {
-        EnqueueCommand first = new EnqueueCommand(
-                "queue-1",
-                1L,
-                Instant.parse("2026-04-05T00:00:00Z")
-        );
+        EnqueueCommand first = new EnqueueCommand("queue-1", 1L, Instant.parse("2026-04-05T00:00:00Z"));
+        EnqueueCommand second = new EnqueueCommand("queue-1", 1L, Instant.parse("2026-04-05T00:00:01Z"));
 
-        EnqueueCommand second = new EnqueueCommand(
-                "queue-1",
-                1L,
-                Instant.parse("2026-04-05T00:00:01Z")
-        );
-
-        EnqueueDecision firstResult = queueCommandPort.enqueueOrGetExisting(first);
-        EnqueueDecision secondResult = queueCommandPort.enqueueOrGetExisting(second);
+        EnqueueDecision firstResult = queueEnqueueCommandPort.enqueueOrGetExisting(first);
+        EnqueueDecision secondResult = queueEnqueueCommandPort.enqueueOrGetExisting(second);
 
         assertThat(firstResult.outcome().name()).isEqualTo("CREATED");
         assertThat(secondResult.outcome().name()).isEqualTo("ALREADY_WAITING");
@@ -113,12 +105,8 @@ class RedisQueueCommandAdapterTest {
                 staleToken
         );
 
-        EnqueueDecision result = queueCommandPort.enqueueOrGetExisting(
-                new EnqueueCommand(
-                        "queue-1",
-                        1L,
-                        Instant.parse("2026-04-05T00:00:00Z")
-                )
+        EnqueueDecision result = queueEnqueueCommandPort.enqueueOrGetExisting(
+                new EnqueueCommand("queue-1", 1L, Instant.parse("2026-04-05T00:00:00Z"))
         );
 
         String indexedToken = stringRedisTemplate.opsForValue().get(
@@ -133,15 +121,13 @@ class RedisQueueCommandAdapterTest {
     @DisplayName("여러 사용자가 순차 진입하면 sequence 가 증가한다")
     @Test
     void enqueueOrGetExisting_whenMultipleUsersSequentially_thenSequenceIncreases() {
-        EnqueueDecision first = queueCommandPort.enqueueOrGetExisting(
+        EnqueueDecision first = queueEnqueueCommandPort.enqueueOrGetExisting(
                 new EnqueueCommand("queue-1", 1L, Instant.parse("2026-04-05T00:00:00Z"))
         );
-
-        EnqueueDecision second = queueCommandPort.enqueueOrGetExisting(
+        EnqueueDecision second = queueEnqueueCommandPort.enqueueOrGetExisting(
                 new EnqueueCommand("queue-1", 2L, Instant.parse("2026-04-05T00:00:01Z"))
         );
-
-        EnqueueDecision third = queueCommandPort.enqueueOrGetExisting(
+        EnqueueDecision third = queueEnqueueCommandPort.enqueueOrGetExisting(
                 new EnqueueCommand("queue-1", 3L, Instant.parse("2026-04-05T00:00:02Z"))
         );
 
@@ -166,7 +152,7 @@ class RedisQueueCommandAdapterTest {
                 ready.countDown();
                 start.await();
 
-                return queueCommandPort.enqueueOrGetExisting(
+                return queueEnqueueCommandPort.enqueueOrGetExisting(
                         new EnqueueCommand("queue-1", 1L, Instant.now())
                 );
             }));
@@ -216,7 +202,7 @@ class RedisQueueCommandAdapterTest {
                 ready.countDown();
                 start.await();
 
-                return queueCommandPort.enqueueOrGetExisting(
+                return queueEnqueueCommandPort.enqueueOrGetExisting(
                         new EnqueueCommand("queue-1", userId, Instant.now())
                 );
             }));
@@ -247,121 +233,5 @@ class RedisQueueCommandAdapterTest {
         assertThat(createdCount).isEqualTo(threadCount);
         assertThat(distinctTokenCount).isEqualTo(threadCount);
         assertThat(zsetSize).isEqualTo(threadCount);
-    }
-
-    @DisplayName("대기열 승격 시 수용 가능 인원만큼만 active 로 이동한다")
-    @Test
-    void promoteWaitingEntries_whenSlotsAvailable_thenPromoteWithinCapacity() {
-        queueCommandPort.enqueueOrGetExisting(
-                new EnqueueCommand("queue-1", 1L, Instant.parse("2026-04-05T00:00:00Z"))
-        );
-        queueCommandPort.enqueueOrGetExisting(
-                new EnqueueCommand("queue-1", 2L, Instant.parse("2026-04-05T00:00:01Z"))
-        );
-        queueCommandPort.enqueueOrGetExisting(
-                new EnqueueCommand("queue-1", 3L, Instant.parse("2026-04-05T00:00:02Z"))
-        );
-
-        PromoteResult result = queueCommandPort.promoteWaitingEntries(
-                new PromoteCommand(
-                        "queue-1",
-                        Instant.parse("2026-04-05T00:01:00Z"),
-                        2,
-                        10,
-                        Duration.ofSeconds(180)
-                )
-        );
-
-        Long waitingSize = stringRedisTemplate.opsForZSet()
-                .zCard(keyGenerator.waitingQueueKey("queue-1"));
-        Long activeSize = stringRedisTemplate.opsForZSet()
-                .zCard(keyGenerator.activeQueueKey("queue-1"));
-
-        assertThat(result.queueId()).isEqualTo("queue-1");
-        assertThat(result.requestedCount()).isEqualTo(10);
-        assertThat(result.promotedCount()).isEqualTo(2);
-        assertThat(waitingSize).isEqualTo(1L);
-        assertThat(activeSize).isEqualTo(2L);
-    }
-
-    @DisplayName("active 가 이미 가득 차 있으면 승격되지 않는다")
-    @Test
-    void promoteWaitingEntries_whenActiveIsFull_thenPromoteNothing() {
-        queueCommandPort.enqueueOrGetExisting(
-                new EnqueueCommand("queue-1", 1L, Instant.parse("2026-04-05T00:00:00Z"))
-        );
-        queueCommandPort.enqueueOrGetExisting(
-                new EnqueueCommand("queue-1", 2L, Instant.parse("2026-04-05T00:00:01Z"))
-        );
-
-        PromoteResult firstPromotion = queueCommandPort.promoteWaitingEntries(
-                new PromoteCommand(
-                        "queue-1",
-                        Instant.parse("2026-04-05T00:01:00Z"),
-                        2,
-                        10,
-                        Duration.ofSeconds(180)
-                )
-        );
-
-        PromoteResult secondPromotion = queueCommandPort.promoteWaitingEntries(
-                new PromoteCommand(
-                        "queue-1",
-                        Instant.parse("2026-04-05T00:02:00Z"),
-                        2,
-                        10,
-                        Duration.ofSeconds(180)
-                )
-        );
-
-        Long waitingSize = stringRedisTemplate.opsForZSet()
-                .zCard(keyGenerator.waitingQueueKey("queue-1"));
-        Long activeSize = stringRedisTemplate.opsForZSet()
-                .zCard(keyGenerator.activeQueueKey("queue-1"));
-
-        assertThat(firstPromotion.promotedCount()).isEqualTo(2);
-        assertThat(secondPromotion.promotedCount()).isZero();
-        assertThat(waitingSize).isZero();
-        assertThat(activeSize).isEqualTo(2L);
-    }
-
-    @DisplayName("승격 배치 크기보다 많은 대기 인원이 있어도 배치 크기만큼만 승격된다")
-    @Test
-    void promoteWaitingEntries_whenWaitingExceedsBatchSize_thenPromoteOnlyBatchSize() {
-        queueCommandPort.enqueueOrGetExisting(
-                new EnqueueCommand("queue-1", 1L, Instant.parse("2026-04-05T00:00:00Z"))
-        );
-        queueCommandPort.enqueueOrGetExisting(
-                new EnqueueCommand("queue-1", 2L, Instant.parse("2026-04-05T00:00:01Z"))
-        );
-        queueCommandPort.enqueueOrGetExisting(
-                new EnqueueCommand("queue-1", 3L, Instant.parse("2026-04-05T00:00:02Z"))
-        );
-        queueCommandPort.enqueueOrGetExisting(
-                new EnqueueCommand("queue-1", 4L, Instant.parse("2026-04-05T00:00:03Z"))
-        );
-        queueCommandPort.enqueueOrGetExisting(
-                new EnqueueCommand("queue-1", 5L, Instant.parse("2026-04-05T00:00:04Z"))
-        );
-
-        PromoteResult result = queueCommandPort.promoteWaitingEntries(
-                new PromoteCommand(
-                        "queue-1",
-                        Instant.parse("2026-04-05T00:01:00Z"),
-                        10,
-                        2,
-                        Duration.ofSeconds(180)
-                )
-        );
-
-        Long waitingSize = stringRedisTemplate.opsForZSet()
-                .zCard(keyGenerator.waitingQueueKey("queue-1"));
-        Long activeSize = stringRedisTemplate.opsForZSet()
-                .zCard(keyGenerator.activeQueueKey("queue-1"));
-
-        assertThat(result.requestedCount()).isEqualTo(2);
-        assertThat(result.promotedCount()).isEqualTo(2);
-        assertThat(waitingSize).isEqualTo(3L);
-        assertThat(activeSize).isEqualTo(2L);
     }
 }
