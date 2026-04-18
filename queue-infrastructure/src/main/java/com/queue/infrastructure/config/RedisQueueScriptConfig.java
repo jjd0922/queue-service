@@ -20,10 +20,10 @@ public class RedisQueueScriptConfig {
     }
 
     @Bean
-    public RedisScript<Long> promoteWaitingEntriesScript() {
+    public RedisScript<List> promoteWaitingEntriesScript() {
         return RedisScript.of(
                 new ClassPathResource("scripts/queue/promote-waiting-entries.lua"),
-                Long.class
+                List.class
         );
     }
 
