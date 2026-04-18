@@ -6,14 +6,21 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   kafka:
     bootstrap-servers: ${QUEUE_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
       group-id: ${QUEUE_KAFKA_CONSUMER_GROUP:queue-lifecycle-audit-v1}
       auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
         spring.json.value.default.type: com.queue.infrastructure.queue.kafka.QueueLifecycleEventMessage
         spring.json.trusted.packages: com.queue.infrastructure.queue.kafka
+    listener:
+      ack-mode: record
 
 queue:
   worker:
@@ -31,3 +38,6 @@ queue:
   kafka:
     lifecycle-topic: queue.lifecycle.v1
     lifecycle-consumer-group: ${QUEUE_KAFKA_CONSUMER_GROUP:queue-lifecycle-audit-v1}
+    lifecycle-dlt-topic: ${QUEUE_KAFKA_DLT_TOPIC:queue.lifecycle.v1.dlt}
+    consumer-max-attempts: ${QUEUE_KAFKA_CONSUMER_MAX_ATTEMPTS:3}
+    consumer-backoff-ms: ${QUEUE_KAFKA_CONSUMER_BACKOFF_MS:1000}
