@@ -10,3 +10,6 @@ queue:
       enabled: true
       fixed-delay-ms: 1000
       batch-size: 50
+
+  kafka:
+    lifecycle-topic: queue.lifecycle.v1

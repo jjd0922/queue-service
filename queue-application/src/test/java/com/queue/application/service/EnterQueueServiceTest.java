@@ -12,6 +12,7 @@ import com.queue.domain.model.EnqueueOutcome;
 import com.queue.domain.model.QueueEntry;
 import com.queue.domain.model.QueueEntryStatus;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -55,6 +56,7 @@ class EnterQueueServiceTest {
     }
 
     @Test
+    @DisplayName("신규 WAITING 엔트리 생성 시 순번을 조회해 반환하고 lifecycle event를 발행한다")
     void enter_whenCreatedWaitingEntry_thenReturnPositionFromRank() {
         EnterQueueCommand command = new EnterQueueCommand("queue-1", 1L);
 
@@ -89,6 +91,7 @@ class EnterQueueServiceTest {
     }
 
     @Test
+    @DisplayName("이미 WAITING 상태인 엔트리가 있으면 기존 엔트리와 순번을 반환하고 lifecycle event는 발행하지 않는다")
     void enter_whenAlreadyWaiting_thenReturnExistingEntryAndPosition() {
         EnterQueueCommand command = new EnterQueueCommand("queue-1", 1L);
 
@@ -117,6 +120,7 @@ class EnterQueueServiceTest {
     }
 
     @Test
+    @DisplayName("이미 ACTIVE 상태인 엔트리가 있으면 순번 0으로 반환하고 lifecycle event는 발행하지 않는다")
     void enter_whenAlreadyActive_thenReturnPositionZero() {
         EnterQueueCommand command = new EnterQueueCommand("queue-1", 1L);
 
@@ -145,6 +149,7 @@ class EnterQueueServiceTest {
     }
 
     @Test
+    @DisplayName("WAITING 상태이지만 순번 조회 결과가 없으면 position은 null로 반환하고 lifecycle event는 발행한다")
     void enter_whenWaitingButRankMissing_thenReturnNullPosition() {
         EnterQueueCommand command = new EnterQueueCommand("queue-1", 1L);
 
