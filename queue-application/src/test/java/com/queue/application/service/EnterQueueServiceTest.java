@@ -4,7 +4,9 @@ import com.queue.application.dto.EnqueueCommand;
 import com.queue.application.dto.EnterQueueCommand;
 import com.queue.application.dto.EnterQueueResult;
 import com.queue.application.port.out.QueueEnqueueCommandPort;
+import com.queue.application.port.out.QueueLifecycleEventPort;
 import com.queue.application.port.out.QueueQueryPort;
+import com.queue.domain.event.QueueLifecycleEvent;
 import com.queue.domain.model.EnqueueDecision;
 import com.queue.domain.model.EnqueueOutcome;
 import com.queue.domain.model.QueueEntry;
@@ -22,6 +24,7 @@ import java.time.ZoneOffset;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,6 +36,9 @@ class EnterQueueServiceTest {
     @Mock
     private QueueQueryPort queueQueryPort;
 
+    @Mock
+    private QueueLifecycleEventPort queueLifecycleEventPort;
+
     private Clock clock;
 
     private EnterQueueService enterQueueService;
@@ -40,7 +46,12 @@ class EnterQueueServiceTest {
     @BeforeEach
     void setUp() {
         clock = Clock.fixed(Instant.parse("2026-04-05T00:00:00Z"), ZoneOffset.UTC);
-        enterQueueService = new EnterQueueService(queueEnqueueCommandPort, queueQueryPort, clock);
+        enterQueueService = new EnterQueueService(
+                queueEnqueueCommandPort,
+                queueQueryPort,
+                queueLifecycleEventPort,
+                clock
+        );
     }
 
     @Test
@@ -74,6 +85,7 @@ class EnterQueueServiceTest {
                 new EnqueueCommand("queue-1", 1L, Instant.parse("2026-04-05T00:00:00Z"))
         );
         verify(queueQueryPort).findRank("queue-1", "token-1");
+        verify(queueLifecycleEventPort).publish(any(QueueLifecycleEvent.class));
     }
 
     @Test
@@ -101,6 +113,7 @@ class EnterQueueServiceTest {
         assertThat(result.expiresAt()).isNull();
 
         verify(queueQueryPort).findRank("queue-1", "token-1");
+        verify(queueLifecycleEventPort, never()).publish(any(QueueLifecycleEvent.class));
     }
 
     @Test
@@ -128,6 +141,7 @@ class EnterQueueServiceTest {
         assertThat(result.status()).isEqualTo("ACTIVE");
         assertThat(result.position()).isEqualTo(0L);
         assertThat(result.expiresAt()).isEqualTo(Instant.parse("2026-04-05T00:11:00Z"));
+        verify(queueLifecycleEventPort, never()).publish(any(QueueLifecycleEvent.class));
     }
 
     @Test
@@ -151,5 +165,6 @@ class EnterQueueServiceTest {
 
         assertThat(result.status()).isEqualTo("WAITING");
         assertThat(result.position()).isNull();
+        verify(queueLifecycleEventPort).publish(any(QueueLifecycleEvent.class));
     }
 }

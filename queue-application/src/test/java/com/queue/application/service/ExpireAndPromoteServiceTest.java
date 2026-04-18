@@ -7,7 +7,11 @@ import com.queue.application.dto.ExpireResult;
 import com.queue.application.dto.PromoteCommand;
 import com.queue.application.dto.PromoteResult;
 import com.queue.application.port.out.QueueExpirationCommandPort;
+import com.queue.application.port.out.QueueLifecycleEventPort;
 import com.queue.application.port.out.QueuePromotionCommandPort;
+import com.queue.domain.event.QueueLifecycleEvent;
+import com.queue.domain.model.QueueEntry;
+import com.queue.domain.model.QueueEntryStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,10 +19,12 @@ import org.mockito.ArgumentCaptor;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,16 +32,19 @@ class ExpireAndPromoteServiceTest {
 
     private QueuePromotionCommandPort queuePromotionCommandPort;
     private QueueExpirationCommandPort queueExpirationCommandPort;
+    private QueueLifecycleEventPort queueLifecycleEventPort;
     private ExpireAndPromoteService service;
 
     @BeforeEach
     void setUp() {
         queuePromotionCommandPort = mock(QueuePromotionCommandPort.class);
         queueExpirationCommandPort = mock(QueueExpirationCommandPort.class);
+        queueLifecycleEventPort = mock(QueueLifecycleEventPort.class);
 
         service = new ExpireAndPromoteService(
                 queuePromotionCommandPort,
-                queueExpirationCommandPort
+                queueExpirationCommandPort,
+                queueLifecycleEventPort
         );
     }
 
@@ -47,7 +56,7 @@ class ExpireAndPromoteServiceTest {
         when(queueExpirationCommandPort.expireActiveEntries(any(ExpireCommand.class)))
                 .thenReturn(new ExpireResult("default", 50, 0));
         when(queuePromotionCommandPort.promoteWaitingEntries(any(PromoteCommand.class)))
-                .thenReturn(new PromoteResult("default", 10, 2));
+                .thenReturn(new PromoteResult("default", 10, promotedEntries(now)));
 
         ExpireAndPromoteResult result = service.execute(
                 new ExpireAndPromoteCommand(
@@ -68,6 +77,7 @@ class ExpireAndPromoteServiceTest {
         assertThat(result.actualExpiredCount()).isZero();
         assertThat(result.requestedPromoteCount()).isEqualTo(10);
         assertThat(result.actualPromotedCount()).isEqualTo(2);
+        verify(queueLifecycleEventPort, times(2)).publish(any(QueueLifecycleEvent.class));
     }
 
     @Test
@@ -78,7 +88,7 @@ class ExpireAndPromoteServiceTest {
         when(queueExpirationCommandPort.expireActiveEntries(any(ExpireCommand.class)))
                 .thenReturn(new ExpireResult("default", 50, 3));
         when(queuePromotionCommandPort.promoteWaitingEntries(any(PromoteCommand.class)))
-                .thenReturn(new PromoteResult("default", 10, 2));
+                .thenReturn(new PromoteResult("default", 10, promotedEntries(now)));
 
         ExpireAndPromoteResult result = service.execute(
                 new ExpireAndPromoteCommand(
@@ -107,5 +117,33 @@ class ExpireAndPromoteServiceTest {
         assertThat(result.actualExpiredCount()).isEqualTo(3);
         assertThat(result.requestedPromoteCount()).isEqualTo(10);
         assertThat(result.actualPromotedCount()).isEqualTo(2);
+        verify(queueLifecycleEventPort, times(2)).publish(any(QueueLifecycleEvent.class));
+    }
+
+    private List<QueueEntry> promotedEntries(Instant now) {
+        return List.of(
+                QueueEntry.restore(
+                        "token-1",
+                        "default",
+                        1L,
+                        QueueEntryStatus.ACTIVE,
+                        1L,
+                        now.minusSeconds(60),
+                        now,
+                        now.plusSeconds(180),
+                        now
+                ),
+                QueueEntry.restore(
+                        "token-2",
+                        "default",
+                        2L,
+                        QueueEntryStatus.ACTIVE,
+                        2L,
+                        now.minusSeconds(55),
+                        now,
+                        now.plusSeconds(180),
+                        now
+                )
+        );
     }
 }

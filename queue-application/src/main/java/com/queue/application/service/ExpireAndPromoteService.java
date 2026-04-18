@@ -3,9 +3,14 @@ package com.queue.application.service;
 import com.queue.application.dto.*;
 import com.queue.application.port.in.ExpireAndPromoteUseCase;
 import com.queue.application.port.out.QueueExpirationCommandPort;
+import com.queue.application.port.out.QueueLifecycleEventPort;
 import com.queue.application.port.out.QueuePromotionCommandPort;
+import com.queue.domain.event.QueueLifecycleEvent;
+import com.queue.domain.model.QueueEntry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
 
 @RequiredArgsConstructor
 @Service
@@ -13,6 +18,7 @@ public class ExpireAndPromoteService implements ExpireAndPromoteUseCase {
 
     private final QueuePromotionCommandPort queuePromotionCommandPort;
     private final QueueExpirationCommandPort queueExpirationCommandPort;
+    private final QueueLifecycleEventPort queueLifecycleEventPort;
 
     @Override
     public ExpireAndPromoteResult execute(ExpireAndPromoteCommand command) {
@@ -35,6 +41,8 @@ public class ExpireAndPromoteService implements ExpireAndPromoteUseCase {
                 )
         );
 
+        publishAdmittedEvents(promoteResult.promotedEntries(), command.requestedAt());
+
         return ExpireAndPromoteResult.of(
                 command.queueId(),
                 command.expireBatchSize(),
@@ -42,5 +50,19 @@ public class ExpireAndPromoteService implements ExpireAndPromoteUseCase {
                 promoteResult.requestedCount(),
                 promoteResult.promotedCount()
         );
+    }
+
+    private void publishAdmittedEvents(Iterable<QueueEntry> promotedEntries, Instant occurredAt) {
+        for (QueueEntry entry : promotedEntries) {
+            queueLifecycleEventPort.publish(
+                    QueueLifecycleEvent.admitted(
+                            entry.getToken(),
+                            entry.getUserId(),
+                            entry.getStatus(),
+                            entry.getSequence(),
+                            occurredAt
+                    )
+            );
+        }
     }
 }
