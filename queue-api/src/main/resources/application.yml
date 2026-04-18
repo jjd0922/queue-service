@@ -1,3 +1,20 @@
+spring:
+  datasource:
+    url: ${QUEUE_DB_URL:jdbc:mysql://localhost:3306/queue_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${QUEUE_DB_USERNAME:root}
+    password: ${QUEUE_DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  kafka:
+    bootstrap-servers: ${QUEUE_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${QUEUE_KAFKA_CONSUMER_GROUP:queue-lifecycle-audit-v1}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.value.default.type: com.queue.infrastructure.queue.kafka.QueueLifecycleEventMessage
+        spring.json.trusted.packages: com.queue.infrastructure.queue.kafka
+
 queue:
   worker:
     promotion:
@@ -13,3 +30,4 @@ queue:
 
   kafka:
     lifecycle-topic: queue.lifecycle.v1
+    lifecycle-consumer-group: ${QUEUE_KAFKA_CONSUMER_GROUP:queue-lifecycle-audit-v1}
