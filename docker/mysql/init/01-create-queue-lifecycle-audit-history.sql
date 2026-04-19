@@ -11,6 +11,10 @@ CREATE TABLE IF NOT EXISTS queue_lifecycle_audit_history (
     received_at DATETIME(6) NOT NULL,
     created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     UNIQUE KEY uk_queue_lifecycle_audit_event_id (event_id),
+    KEY idx_queue_lifecycle_audit_event_type (event_type),
+    KEY idx_queue_lifecycle_audit_user_id (user_id),
     KEY idx_queue_lifecycle_audit_occurred_at (occurred_at),
+    KEY idx_queue_lifecycle_audit_received_at (received_at),
+    KEY idx_queue_lifecycle_audit_created_at (created_at),
     KEY idx_queue_lifecycle_audit_queue_token (queue_token)
 );

@@ -6,7 +6,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableConfigurationProperties({
         QueuePromotionWorkerProperties.class,
-        QueueExpirationWorkerProperties.class
+        QueueExpirationWorkerProperties.class,
+        QueueAuditRetentionProperties.class
 })
 public class QueueWorkerPropertiesConfig {
 }

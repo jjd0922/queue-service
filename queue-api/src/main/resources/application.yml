@@ -41,3 +41,10 @@ queue:
     lifecycle-dlt-topic: ${QUEUE_KAFKA_DLT_TOPIC:queue.lifecycle.v1.dlt}
     consumer-max-attempts: ${QUEUE_KAFKA_CONSUMER_MAX_ATTEMPTS:3}
     consumer-backoff-ms: ${QUEUE_KAFKA_CONSUMER_BACKOFF_MS:1000}
+
+  audit:
+    retention:
+      enabled: ${QUEUE_AUDIT_RETENTION_ENABLED:true}
+      fixed-delay-ms: ${QUEUE_AUDIT_RETENTION_FIXED_DELAY_MS:300000}
+      retention-days: ${QUEUE_AUDIT_RETENTION_DAYS:30}
+      batch-size: ${QUEUE_AUDIT_RETENTION_BATCH_SIZE:500}
