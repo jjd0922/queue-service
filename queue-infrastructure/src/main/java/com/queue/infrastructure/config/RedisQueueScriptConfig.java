@@ -3,6 +3,7 @@ package com.queue.infrastructure.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 
 import java.util.List;
@@ -24,6 +25,14 @@ public class RedisQueueScriptConfig {
                 new ClassPathResource("scripts/queue/promote-waiting-entries.lua"),
                 Long.class
         );
+    }
+
+    @Bean
+    public DefaultRedisScript<Long> expireActiveEntriesScript() {
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>();
+        script.setLocation(new ClassPathResource("redis/queue/expire_active_entries.lua"));
+        script.setResultType(Long.class);
+        return script;
     }
 
 }

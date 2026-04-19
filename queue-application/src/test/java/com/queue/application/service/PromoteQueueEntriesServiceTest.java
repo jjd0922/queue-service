@@ -3,7 +3,7 @@ package com.queue.application.service;
 import com.queue.application.config.QueuePromotionProperties;
 import com.queue.application.dto.PromoteCommand;
 import com.queue.application.dto.PromoteResult;
-import com.queue.application.port.out.QueueCommandPort;
+import com.queue.application.port.out.QueuePromotionCommandPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,13 +17,13 @@ import static org.mockito.Mockito.*;
 
 class PromoteQueueEntriesServiceTest {
 
-    private QueueCommandPort queueCommandPort;
+    private QueuePromotionCommandPort queuePromotionCommandPort;
     private QueuePromotionProperties properties;
     private PromoteQueueEntriesService service;
 
     @BeforeEach
     void setUp() {
-        queueCommandPort = mock(QueueCommandPort.class);
+        queuePromotionCommandPort = mock(QueuePromotionCommandPort.class);
 
         properties = new QueuePromotionProperties();
         properties.setQueueId("default");
@@ -31,19 +31,19 @@ class PromoteQueueEntriesServiceTest {
         properties.setMaxActiveCount(100);
         properties.setActiveTtlSeconds(180L);
 
-        service = new PromoteQueueEntriesService(queueCommandPort, properties);
+        service = new PromoteQueueEntriesService(queuePromotionCommandPort, properties);
     }
 
     @Test
     @DisplayName("설정값으로 PromoteCommand 를 생성해 out port 로 전달한다")
     void promote_buildsCommandAndDelegates() {
-        when(queueCommandPort.promoteWaitingEntries(any(PromoteCommand.class)))
+        when(queuePromotionCommandPort.promoteWaitingEntries(any(PromoteCommand.class)))
                 .thenReturn(new PromoteResult("default", 25, 7));
 
         PromoteResult result = service.promote();
 
         ArgumentCaptor<PromoteCommand> captor = ArgumentCaptor.forClass(PromoteCommand.class);
-        verify(queueCommandPort).promoteWaitingEntries(captor.capture());
+        verify(queuePromotionCommandPort).promoteWaitingEntries(captor.capture());
 
         PromoteCommand actual = captor.getValue();
 

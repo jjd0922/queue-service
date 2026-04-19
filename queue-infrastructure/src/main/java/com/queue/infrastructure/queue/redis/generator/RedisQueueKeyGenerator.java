@@ -7,8 +7,10 @@ public class RedisQueueKeyGenerator {
 
     private static final String WAITING_QUEUE_KEY = "queue:waiting:%s";
     private static final String ACTIVE_QUEUE_KEY = "queue:active:%s";
+    private static final String ACTIVE_EXPIRY_KEY = "queue:active-expiry:%s";
     private static final String ENTRY_KEY = "queue:entry:%s";
     private static final String USER_INDEX_KEY = "queue:user-index:%s:%s";
+    private static final String USER_INDEX_KEY_PREFIX = "queue:user-index:%s:";
     private static final String SEQUENCE_KEY = "queue:sequence:%s";
     private static final String ENTRY_KEY_PREFIX = "queue:entry:";
 
@@ -20,12 +22,20 @@ public class RedisQueueKeyGenerator {
         return ACTIVE_QUEUE_KEY.formatted(queueId);
     }
 
+    public String activeExpiryKey(String queueId) {
+        return ACTIVE_EXPIRY_KEY.formatted(queueId);
+    }
+
     public String entryKey(String token) {
         return ENTRY_KEY.formatted(token);
     }
 
     public String userIndexKey(String queueId, Long userId) {
         return USER_INDEX_KEY.formatted(queueId, userId);
+    }
+
+    public String userIndexKeyPrefix(String queueId) {
+        return USER_INDEX_KEY_PREFIX.formatted(queueId);
     }
 
     public String sequenceKey(String queueId) {

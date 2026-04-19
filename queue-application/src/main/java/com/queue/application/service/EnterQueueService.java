@@ -15,13 +15,13 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class EnterQueueService implements EnterQueueUseCase {
 
-    private final QueueCommandPort queueCommandPort;
+    private final QueueEnqueueCommandPort queueEnqueueCommandPort;
     private final QueueQueryPort queueQueryPort;
     private final Clock clock;
 
     @Override
     public EnterQueueResult enter(EnterQueueCommand command) {
-        EnqueueDecision decision = queueCommandPort.enqueueOrGetExisting(
+        EnqueueDecision decision = queueEnqueueCommandPort.enqueueOrGetExisting(
                 new EnqueueCommand(
                         command.queueId(),
                         command.userId(),

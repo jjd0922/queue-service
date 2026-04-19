@@ -1,4 +1,4 @@
-package com.queue.infrastructure.queue.worker;
+package com.queue.infrastructure.queue.redis.worker;
 
 import com.queue.application.dto.PromoteResult;
 import com.queue.application.port.in.PromoteQueueEntriesUseCase;

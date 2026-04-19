@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.time.Duration;
+
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "queue.worker.promotion")
@@ -23,4 +25,8 @@ public class QueuePromotionProperties {
 
     /** active 상태 유지 시간(초) */
     private long activeTtlSeconds = 180L;
+
+    public Duration activeTtl() {
+        return Duration.ofSeconds(activeTtlSeconds);
+    }
 }

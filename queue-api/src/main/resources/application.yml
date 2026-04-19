@@ -7,3 +7,8 @@ queue:
       batch-size: 50
       max-active-count: 100
       active-ttl-seconds: 180
+
+    expiration:
+      enabled: true
+      fixed-delay-ms: 1000
+      batch-size: 50
