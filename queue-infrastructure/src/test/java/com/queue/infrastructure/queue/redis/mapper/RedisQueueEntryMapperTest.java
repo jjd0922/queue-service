@@ -1,8 +1,7 @@
-package com.queue.infrastructure.redis.queue;
+package com.queue.infrastructure.queue.redis.mapper;
 
-import com.queue.domain.queue.model.QueueEntry;
-import com.queue.domain.queue.model.QueueStatus;
-import com.queue.infrastructure.queue.redis.RedisQueueEntryMapper;
+import com.queue.domain.model.QueueEntry;
+import com.queue.domain.model.QueueStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,15 +14,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RedisQueueEntryMapperTest {
 
-    private final RedisQueueEntryMapper mapper = new RedisQueueEntryMapper();
-
     @Test
     @DisplayName("WAITING 상태 엔트리를 hash 로 변환한다")
     void toHash_waiting() {
         Instant now = Instant.parse("2026-04-04T10:00:00Z");
         QueueEntry entry = QueueEntry.enter("qt_token_1", "product:100", 1L, 10L, now);
 
-        Map<String, String> hash = mapper.toHash(entry);
+        Map<String, String> hash = RedisQueueEntryMapper.toHash(entry);
 
         assertThat(hash)
                 .containsEntry("token", "qt_token_1")
@@ -47,7 +44,7 @@ class RedisQueueEntryMapperTest {
         QueueEntry entry = QueueEntry.enter("qt_token_1", "product:100", 1L, 10L, enteredAt);
         entry.activate(activatedAt, expiresAt);
 
-        Map<String, String> hash = mapper.toHash(entry);
+        Map<String, String> hash = RedisQueueEntryMapper.toHash(entry);
 
         assertThat(hash)
                 .containsEntry("token", "qt_token_1")
@@ -75,7 +72,7 @@ class RedisQueueEntryMapperTest {
         hash.put("enteredAt", String.valueOf(now.toEpochMilli()));
         hash.put("lastUpdatedAt", String.valueOf(now.toEpochMilli()));
 
-        QueueEntry entry = mapper.fromHash(hash);
+        QueueEntry entry = RedisQueueEntryMapper.fromHash(hash);
 
         assertThat(entry.getToken()).isEqualTo("qt_token_1");
         assertThat(entry.getQueueId()).isEqualTo("product:100");
@@ -106,7 +103,7 @@ class RedisQueueEntryMapperTest {
         hash.put("expiresAt", String.valueOf(expiresAt.toEpochMilli()));
         hash.put("lastUpdatedAt", String.valueOf(activatedAt.toEpochMilli()));
 
-        QueueEntry entry = mapper.fromHash(hash);
+        QueueEntry entry = RedisQueueEntryMapper.fromHash(hash);
 
         assertThat(entry.getToken()).isEqualTo("qt_token_1");
         assertThat(entry.getQueueId()).isEqualTo("product:100");
@@ -129,10 +126,10 @@ class RedisQueueEntryMapperTest {
         QueueEntry entry = QueueEntry.enter("qt_token_1", "product:100", 1L, 10L, enteredAt);
         entry.activate(activatedAt, expiresAt);
 
-        Map<String, String> hash = mapper.toHash(entry);
+        Map<String, String> hash = RedisQueueEntryMapper.toHash(entry);
         Map<Object, Object> source = new HashMap<>(hash);
 
-        QueueEntry restored = mapper.fromHash(source);
+        QueueEntry restored = RedisQueueEntryMapper.fromHash(source);
 
         assertThat(restored.getToken()).isEqualTo(entry.getToken());
         assertThat(restored.getQueueId()).isEqualTo(entry.getQueueId());
@@ -151,7 +148,7 @@ class RedisQueueEntryMapperTest {
         Map<Object, Object> hash = new HashMap<>();
         hash.put("queueId", "product:100");
 
-        assertThatThrownBy(() -> mapper.fromHash(hash))
+        assertThatThrownBy(() -> RedisQueueEntryMapper.fromHash(hash))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("missing required hash field");
     }
@@ -159,7 +156,7 @@ class RedisQueueEntryMapperTest {
     @Test
     @DisplayName("빈 hash 이면 예외가 발생한다")
     void fromHash_fail_whenSourceEmpty() {
-        assertThatThrownBy(() -> mapper.fromHash(new HashMap<>()))
+        assertThatThrownBy(() -> RedisQueueEntryMapper.fromHash(new HashMap<>()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("source hash is empty");
     }

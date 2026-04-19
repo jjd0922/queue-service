@@ -1,8 +1,11 @@
-package com.queue.domain.queue.model;
+package com.queue.domain.model;
+
+import lombok.Getter;
 
 import java.time.Instant;
 import java.util.Objects;
 
+@Getter
 public class QueueEntry {
 
     private final String token;
@@ -10,9 +13,9 @@ public class QueueEntry {
     private final Long userId;
 
     private QueueStatus status;
-    private Long sequence;
+    private final Long sequence;
 
-    private Instant enteredAt;
+    private final Instant enteredAt;
     private Instant activatedAt;
     private Instant expiresAt;
     private Instant lastUpdatedAt;
@@ -183,39 +186,4 @@ public class QueueEntry {
         }
     }
 
-    public String getToken() {
-        return token;
-    }
-
-    public String getQueueId() {
-        return queueId;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public QueueStatus getStatus() {
-        return status;
-    }
-
-    public Long getSequence() {
-        return sequence;
-    }
-
-    public Instant getEnteredAt() {
-        return enteredAt;
-    }
-
-    public Instant getActivatedAt() {
-        return activatedAt;
-    }
-
-    public Instant getExpiresAt() {
-        return expiresAt;
-    }
-
-    public Instant getLastUpdatedAt() {
-        return lastUpdatedAt;
-    }
 }

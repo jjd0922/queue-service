@@ -1,14 +1,14 @@
-package com.queue.infrastructure.queue.redis;
+package com.queue.infrastructure.queue.redis.mapper;
 
-import com.queue.domain.queue.model.QueueEntry;
-import com.queue.domain.queue.model.QueueStatus;
+import com.queue.domain.model.QueueEntry;
+import com.queue.domain.model.QueueStatus;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class RedisQueueEntryMapper {
+public final class RedisQueueEntryMapper {
 
     private static final String TOKEN = "token";
     private static final String QUEUE_ID = "queueId";
@@ -20,7 +20,10 @@ public class RedisQueueEntryMapper {
     private static final String EXPIRES_AT = "expiresAt";
     private static final String LAST_UPDATED_AT = "lastUpdatedAt";
 
-    public Map<String, String> toHash(QueueEntry entry) {
+    private RedisQueueEntryMapper() {
+    }
+
+    public static Map<String, String> toHash(QueueEntry entry) {
         Objects.requireNonNull(entry, "entry must not be null");
 
         Map<String, String> hash = new LinkedHashMap<>();
@@ -36,7 +39,7 @@ public class RedisQueueEntryMapper {
         return hash;
     }
 
-    public QueueEntry fromHash(Map<Object, Object> source) {
+    public static QueueEntry fromHash(Map<Object, Object> source) {
         if (source == null || source.isEmpty()) {
             throw new IllegalArgumentException("source hash is empty");
         }
@@ -64,7 +67,7 @@ public class RedisQueueEntryMapper {
         );
     }
 
-    private void putIfNotNull(Map<String, String> hash, String key, Instant value) {
+    private static void putIfNotNull(Map<String, String> hash, String key, Instant value) {
         if (value != null) {
             hash.put(key, String.valueOf(toEpochMilli(value)));
         }
@@ -79,6 +82,7 @@ public class RedisQueueEntryMapper {
         if (value == null) {
             throw new IllegalArgumentException("missing required hash field: " + key);
         }
+
         String text = String.valueOf(value);
         if (text.isBlank()) {
             throw new IllegalArgumentException("blank required hash field: " + key);
@@ -99,10 +103,12 @@ public class RedisQueueEntryMapper {
         if (value == null) {
             return null;
         }
+
         String text = String.valueOf(value);
         if (text.isBlank()) {
             return null;
         }
+
         return Instant.ofEpochMilli(Long.parseLong(text));
     }
 }
