@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 public class RedisQueueKeyGenerator {
 
     private static final String WAITING_QUEUE_KEY = "queue:waiting:%s";
+    private static final String ACTIVE_QUEUE_KEY = "queue:active:%s";
     private static final String ENTRY_KEY = "queue:entry:%s";
     private static final String USER_INDEX_KEY = "queue:user-index:%s:%s";
     private static final String SEQUENCE_KEY = "queue:sequence:%s";
@@ -13,6 +14,10 @@ public class RedisQueueKeyGenerator {
 
     public String waitingQueueKey(String queueId) {
         return WAITING_QUEUE_KEY.formatted(queueId);
+    }
+
+    public String activeQueueKey(String queueId) {
+        return ACTIVE_QUEUE_KEY.formatted(queueId);
     }
 
     public String entryKey(String token) {
