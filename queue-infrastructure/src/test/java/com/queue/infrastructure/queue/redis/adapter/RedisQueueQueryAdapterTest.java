@@ -2,6 +2,7 @@ package com.queue.infrastructure.queue.redis.adapter;
 
 import com.queue.application.port.out.QueueQueryPort;
 import com.queue.infrastructure.queue.redis.generator.RedisQueueKeyGenerator;
+import com.queue.infrastructure.queue.redis.support.RedisWaitingQueuePositionReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -38,7 +39,8 @@ class RedisQueueQueryAdapterTest {
     @EnableAutoConfiguration
     @Import({
             RedisQueueQueryAdapter.class,
-            RedisQueueKeyGenerator.class
+            RedisQueueKeyGenerator.class,
+            RedisWaitingQueuePositionReader.class
     })
     static class TestConfig {
     }

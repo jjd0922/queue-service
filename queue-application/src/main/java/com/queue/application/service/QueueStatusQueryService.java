@@ -38,13 +38,13 @@ public class QueueStatusQueryService implements GetQueueStatusUseCase {
             );
         }
 
-        return queueStatusQueryPort.findWaitingRank(query.queueName(), query.queueToken())
-                .map(rank -> new QueueStatusResult(
+        return queueStatusQueryPort.findWaitingPosition(query.queueName(), query.queueToken())
+                .map(position -> new QueueStatusResult(
                         query.queueName(),
                         query.queueToken(),
                         QueueEntryStatus.WAITING.name(),
-                        rank + 1,
-                        rank,
+                        position,
+                        position - 1,
                         entry.enteredAt(),
                         entry.activatedAt(),
                         entry.expiresAt()

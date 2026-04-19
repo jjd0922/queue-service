@@ -51,7 +51,7 @@ class QueueStatusQueryServiceTest {
 
             given(queueStatusQueryPort.findEntry(token)).willReturn(Optional.of(snapshot));
             given(queueStatusQueryPort.isActive(queueName, token)).willReturn(false);
-            given(queueStatusQueryPort.findWaitingRank(queueName, token)).willReturn(Optional.of(4L));
+            given(queueStatusQueryPort.findWaitingPosition(queueName, token)).willReturn(Optional.of(5L));
 
             // when
             QueueStatusResult result = queueStatusQueryService.getQueueStatus(
@@ -139,7 +139,7 @@ class QueueStatusQueryServiceTest {
 
             given(queueStatusQueryPort.findEntry(token)).willReturn(Optional.of(snapshot));
             given(queueStatusQueryPort.isActive(queueName, token)).willReturn(false);
-            given(queueStatusQueryPort.findWaitingRank(queueName, token)).willReturn(Optional.empty());
+            given(queueStatusQueryPort.findWaitingPosition(queueName, token)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> queueStatusQueryService.getQueueStatus(

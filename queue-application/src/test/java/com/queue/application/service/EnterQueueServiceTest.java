@@ -1,6 +1,6 @@
 package com.queue.application.service;
 
-import com.queue.application.dto.EnqueueRequest;
+import com.queue.application.dto.EnqueueCommand;
 import com.queue.application.dto.EnterQueueCommand;
 import com.queue.application.dto.EnterQueueResult;
 import com.queue.application.port.out.QueueCommandPort;
@@ -55,7 +55,7 @@ class EnterQueueServiceTest {
                 Instant.parse("2026-04-05T00:00:00Z")
         );
 
-        given(queueCommandPort.enqueueOrGetExisting(any(EnqueueRequest.class)))
+        given(queueCommandPort.enqueueOrGetExisting(any(EnqueueCommand.class)))
                 .willReturn(new EnqueueDecision(EnqueueOutcome.CREATED, entry));
         given(queueQueryPort.findRank("queue-1", "token-1"))
                 .willReturn(1L);
@@ -71,7 +71,7 @@ class EnterQueueServiceTest {
         assertThat(result.expiresAt()).isNull();
 
         verify(queueCommandPort).enqueueOrGetExisting(
-                new EnqueueRequest("queue-1", 1L, Instant.parse("2026-04-05T00:00:00Z"))
+                new EnqueueCommand("queue-1", 1L, Instant.parse("2026-04-05T00:00:00Z"))
         );
         verify(queueQueryPort).findRank("queue-1", "token-1");
     }
@@ -88,7 +88,7 @@ class EnterQueueServiceTest {
                 Instant.parse("2026-04-05T00:00:00Z")
         );
 
-        given(queueCommandPort.enqueueOrGetExisting(any(EnqueueRequest.class)))
+        given(queueCommandPort.enqueueOrGetExisting(any(EnqueueCommand.class)))
                 .willReturn(new EnqueueDecision(EnqueueOutcome.ALREADY_WAITING, entry));
         given(queueQueryPort.findRank("queue-1", "token-1"))
                 .willReturn(3L);
@@ -119,7 +119,7 @@ class EnterQueueServiceTest {
                 Instant.parse("2026-04-05T00:01:00Z")
         );
 
-        given(queueCommandPort.enqueueOrGetExisting(any(EnqueueRequest.class)))
+        given(queueCommandPort.enqueueOrGetExisting(any(EnqueueCommand.class)))
                 .willReturn(new EnqueueDecision(EnqueueOutcome.ALREADY_ACTIVE, activeEntry));
 
         EnterQueueResult result = enterQueueService.enter(command);
@@ -142,7 +142,7 @@ class EnterQueueServiceTest {
                 Instant.parse("2026-04-05T00:00:00Z")
         );
 
-        given(queueCommandPort.enqueueOrGetExisting(any(EnqueueRequest.class)))
+        given(queueCommandPort.enqueueOrGetExisting(any(EnqueueCommand.class)))
                 .willReturn(new EnqueueDecision(EnqueueOutcome.CREATED, entry));
         given(queueQueryPort.findRank("queue-1", "token-1"))
                 .willReturn(null);

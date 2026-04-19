@@ -3,6 +3,7 @@ package com.queue.infrastructure.queue.redis.adapter;
 import com.queue.domain.model.QueueEntrySnapshot;
 import com.queue.domain.model.QueueEntryStatus;
 import com.queue.infrastructure.queue.redis.generator.RedisQueueKeyGenerator;
+import com.queue.infrastructure.queue.redis.support.RedisWaitingQueuePositionReader;
 import org.junit.jupiter.api.*;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -27,6 +28,7 @@ class RedisQueueStatusQueryAdapterTest {
     private LettuceConnectionFactory connectionFactory;
     private StringRedisTemplate redisTemplate;
     private RedisQueueKeyGenerator keyGenerator;
+    private RedisWaitingQueuePositionReader waitingQueuePositionReader;
     private RedisQueueStatusQueryAdapter adapter;
 
     @BeforeEach
@@ -42,7 +44,8 @@ class RedisQueueStatusQueryAdapterTest {
         redisTemplate.afterPropertiesSet();
 
         keyGenerator = new RedisQueueKeyGenerator();
-        adapter = new RedisQueueStatusQueryAdapter(redisTemplate, keyGenerator);
+        waitingQueuePositionReader = new RedisWaitingQueuePositionReader(redisTemplate, keyGenerator);
+        adapter = new RedisQueueStatusQueryAdapter(redisTemplate, keyGenerator, waitingQueuePositionReader);
 
         Assertions.assertNotNull(redisTemplate.getConnectionFactory());
         redisTemplate.getConnectionFactory()
@@ -103,8 +106,8 @@ class RedisQueueStatusQueryAdapterTest {
     }
 
     @Nested
-    @DisplayName("findWaitingRank")
-    class FindWaitingRank {
+    @DisplayName("findWaitingPosition")
+    class FindWaitingPosition {
 
         @Test
         @DisplayName("대기열에 토큰이 있으면 순번을 반환한다")
@@ -119,10 +122,10 @@ class RedisQueueStatusQueryAdapterTest {
             redisTemplate.opsForZSet().add(waitingKey, "token-3", 3);
 
             // when
-            Optional<Long> result = adapter.findWaitingRank(queueName, token);
+            Optional<Long> result = adapter.findWaitingPosition(queueName, token);
 
             // then
-            assertThat(result).contains(1L);
+            assertThat(result).contains(2L);
         }
 
         @Test
@@ -133,7 +136,7 @@ class RedisQueueStatusQueryAdapterTest {
             String token = "missing-token";
 
             // when
-            Optional<Long> result = adapter.findWaitingRank(queueName, token);
+            Optional<Long> result = adapter.findWaitingPosition(queueName, token);
 
             // then
             assertThat(result).isEmpty();

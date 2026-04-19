@@ -4,6 +4,7 @@ import com.queue.application.port.out.QueueStatusQueryPort;
 import com.queue.domain.model.QueueEntrySnapshot;
 import com.queue.domain.model.QueueEntryStatus;
 import com.queue.infrastructure.queue.redis.generator.RedisQueueKeyGenerator;
+import com.queue.infrastructure.queue.redis.support.RedisWaitingQueuePositionReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ public class RedisQueueStatusQueryAdapter implements QueueStatusQueryPort {
 
     private final StringRedisTemplate redisTemplate;
     private final RedisQueueKeyGenerator keyGenerator;
+    private final RedisWaitingQueuePositionReader waitingQueuePositionReader;
 
     @Override
     public Optional<QueueEntrySnapshot> findEntry(String token) {
@@ -38,10 +40,8 @@ public class RedisQueueStatusQueryAdapter implements QueueStatusQueryPort {
     }
 
     @Override
-    public Optional<Long> findWaitingRank(String queueId, String token) {
-        Long rank = redisTemplate.opsForZSet()
-                .rank(keyGenerator.waitingQueueKey(queueId), token);
-        return Optional.ofNullable(rank);
+    public Optional<Long> findWaitingPosition(String queueId, String token) {
+        return waitingQueuePositionReader.findPosition(queueId, token);
     }
 
     @Override
