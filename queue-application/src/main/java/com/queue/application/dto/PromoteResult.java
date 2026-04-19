@@ -1,15 +1,15 @@
 package com.queue.application.dto;
 
+import com.queue.domain.model.QueueEntry;
+
+import java.util.List;
+
 public record PromoteResult(
         String queueId,
         int requestedCount,
-        int promotedCount
+        List<QueueEntry> promotedEntries
 ) {
-    public static PromoteResult empty(String queueId, int requestedCount) {
-        return new PromoteResult(queueId, requestedCount, 0);
-    }
-
-    public boolean hasPromoted() {
-        return promotedCount > 0;
+    public int promotedCount() {
+        return promotedEntries.size();
     }
 }

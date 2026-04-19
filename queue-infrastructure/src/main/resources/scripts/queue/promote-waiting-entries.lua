@@ -14,17 +14,17 @@ local activeCount = redis.call('ZCARD', KEYS[2])
 local availableSlots = tonumber(ARGV[6]) - activeCount
 
 if availableSlots <= 0 then
-    return 0
+    return {}
 end
 
 local promoteCount = math.min(availableSlots, tonumber(ARGV[7]))
 local tokens = redis.call('ZRANGE', KEYS[1], 0, promoteCount - 1)
 
 if #tokens == 0 then
-    return 0
+    return {}
 end
 
-local promotedCount = 0
+local promotedTokens = {}
 
 for _, token in ipairs(tokens) do
     local entryKey = ARGV[1] .. token
@@ -42,10 +42,10 @@ for _, token in ipairs(tokens) do
         redis.call('ZADD', KEYS[2], tonumber(sequence), token)
         redis.call('ZADD', KEYS[3], tonumber(ARGV[5]), token)
 
-        promotedCount = promotedCount + 1
+        table.insert(promotedTokens, token)
     else
         redis.call('ZREM', KEYS[1], token)
     end
 end
 
-return promotedCount
+return promotedTokens
