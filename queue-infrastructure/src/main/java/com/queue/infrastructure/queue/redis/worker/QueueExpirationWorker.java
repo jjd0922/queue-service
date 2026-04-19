@@ -34,6 +34,7 @@ public class QueueExpirationWorker {
                         promotionProperties.getQueueId(),
                         Instant.now(clock),
                         expirationProperties.getBatchSize(),
+                        promotionProperties.getBatchSize(),
                         promotionProperties.getMaxActiveCount(),
                         promotionProperties.activeTtl()
                 )

@@ -1,9 +1,10 @@
 package com.queue.application.service;
 
+import com.queue.application.common.exception.BaseException;
+import com.queue.application.common.exception.CommonErrorCode;
 import com.queue.application.dto.GetQueueStatusQuery;
 import com.queue.application.dto.QueueStatusResult;
 import com.queue.application.port.out.QueueStatusQueryPort;
-import com.queue.domain.exception.QueueException;
 import com.queue.domain.model.QueueEntrySnapshot;
 import com.queue.domain.model.QueueEntryStatus;
 import org.junit.jupiter.api.DisplayName;
@@ -118,7 +119,9 @@ class QueueStatusQueryServiceTest {
             // when & then
             assertThatThrownBy(() -> queueStatusQueryService.getQueueStatus(
                     new GetQueueStatusQuery(queueName, token)
-            )).isInstanceOf(QueueException.class);
+            )).isInstanceOf(BaseException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(CommonErrorCode.NOT_FOUND);
         }
 
         @Test
@@ -144,7 +147,9 @@ class QueueStatusQueryServiceTest {
             // when & then
             assertThatThrownBy(() -> queueStatusQueryService.getQueueStatus(
                     new GetQueueStatusQuery(queueName, token)
-            )).isInstanceOf(QueueException.class);
+            )).isInstanceOf(BaseException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(CommonErrorCode.NOT_FOUND);
         }
     }
 }

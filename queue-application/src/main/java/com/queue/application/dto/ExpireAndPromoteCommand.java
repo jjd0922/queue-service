@@ -7,6 +7,7 @@ public record ExpireAndPromoteCommand(
         String queueId,
         Instant requestedAt,
         int expireBatchSize,
+        int promoteBatchSize,
         int maxActiveCount,
         Duration activeTtl
 ) {
@@ -19,6 +20,9 @@ public record ExpireAndPromoteCommand(
         }
         if (expireBatchSize <= 0) {
             throw new IllegalArgumentException("expireBatchSize must be greater than zero");
+        }
+        if (promoteBatchSize <= 0) {
+            throw new IllegalArgumentException("promoteBatchSize must be greater than zero");
         }
         if (maxActiveCount <= 0) {
             throw new IllegalArgumentException("maxActiveCount must be greater than zero");

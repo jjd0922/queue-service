@@ -18,7 +18,9 @@ import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ExpireAndPromoteServiceTest {
 
@@ -38,49 +40,52 @@ class ExpireAndPromoteServiceTest {
     }
 
     @Test
-    @DisplayName("만료된 엔트리가 없으면 재승격을 호출하지 않는다")
-    void execute_whenNoExpiredEntries_thenSkipPromotion() {
+    @DisplayName("만료 건수가 없어도 승격을 시도한다")
+    void execute_whenNoExpiredEntries_thenPromotesByBatchSize() {
         Instant now = Instant.parse("2026-04-16T10:00:00Z");
 
         when(queueExpirationCommandPort.expireActiveEntries(any(ExpireCommand.class)))
                 .thenReturn(new ExpireResult("default", 50, 0));
+        when(queuePromotionCommandPort.promoteWaitingEntries(any(PromoteCommand.class)))
+                .thenReturn(new PromoteResult("default", 10, 2));
 
         ExpireAndPromoteResult result = service.execute(
                 new ExpireAndPromoteCommand(
                         "default",
                         now,
                         50,
+                        10,
                         100,
                         Duration.ofSeconds(180)
                 )
         );
 
         verify(queueExpirationCommandPort).expireActiveEntries(any(ExpireCommand.class));
-        verify(queuePromotionCommandPort, never()).promoteWaitingEntries(any(PromoteCommand.class));
+        verify(queuePromotionCommandPort).promoteWaitingEntries(any(PromoteCommand.class));
 
         assertThat(result.queueId()).isEqualTo("default");
         assertThat(result.requestedExpireBatchSize()).isEqualTo(50);
         assertThat(result.actualExpiredCount()).isZero();
-        assertThat(result.requestedPromoteCount()).isZero();
-        assertThat(result.actualPromotedCount()).isZero();
+        assertThat(result.requestedPromoteCount()).isEqualTo(10);
+        assertThat(result.actualPromotedCount()).isEqualTo(2);
     }
 
     @Test
-    @DisplayName("만료된 수만큼 PromoteCommand 를 생성해 promotion port 로 전달한다")
+    @DisplayName("설정된 promote batch 크기로 승격을 호출한다")
     void execute_buildsPromoteCommandAndDelegates() {
         Instant now = Instant.parse("2026-04-16T10:00:00Z");
 
         when(queueExpirationCommandPort.expireActiveEntries(any(ExpireCommand.class)))
                 .thenReturn(new ExpireResult("default", 50, 3));
-
         when(queuePromotionCommandPort.promoteWaitingEntries(any(PromoteCommand.class)))
-                .thenReturn(new PromoteResult("default", 3, 2));
+                .thenReturn(new PromoteResult("default", 10, 2));
 
         ExpireAndPromoteResult result = service.execute(
                 new ExpireAndPromoteCommand(
                         "default",
                         now,
                         50,
+                        10,
                         100,
                         Duration.ofSeconds(180)
                 )
@@ -94,13 +99,13 @@ class ExpireAndPromoteServiceTest {
         assertThat(actual.queueId()).isEqualTo("default");
         assertThat(actual.requestedAt()).isEqualTo(now);
         assertThat(actual.maxActiveCount()).isEqualTo(100);
-        assertThat(actual.promoteBatchSize()).isEqualTo(3);
+        assertThat(actual.promoteBatchSize()).isEqualTo(10);
         assertThat(actual.activeTtl()).isEqualTo(Duration.ofSeconds(180));
 
         assertThat(result.queueId()).isEqualTo("default");
         assertThat(result.requestedExpireBatchSize()).isEqualTo(50);
         assertThat(result.actualExpiredCount()).isEqualTo(3);
-        assertThat(result.requestedPromoteCount()).isEqualTo(3);
+        assertThat(result.requestedPromoteCount()).isEqualTo(10);
         assertThat(result.actualPromotedCount()).isEqualTo(2);
     }
 }

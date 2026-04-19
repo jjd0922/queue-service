@@ -1,8 +1,6 @@
 queue:
   worker:
     promotion:
-      enabled: true
-      fixed-delay-ms: 1000
       queue-id: default
       batch-size: 50
       max-active-count: 100

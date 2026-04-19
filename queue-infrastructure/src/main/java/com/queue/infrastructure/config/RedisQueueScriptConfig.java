@@ -30,7 +30,7 @@ public class RedisQueueScriptConfig {
     @Bean
     public DefaultRedisScript<Long> expireActiveEntriesScript() {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
-        script.setLocation(new ClassPathResource("redis/queue/expire_active_entries.lua"));
+        script.setLocation(new ClassPathResource("scripts/queue/expire_active_entries.lua"));
         script.setResultType(Long.class);
         return script;
     }
