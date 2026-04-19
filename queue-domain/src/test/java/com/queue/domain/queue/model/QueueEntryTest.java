@@ -1,7 +1,7 @@
 package com.queue.domain.queue.model;
 
 import com.queue.domain.model.QueueEntry;
-import com.queue.domain.model.QueueStatus;
+import com.queue.domain.model.QueueEntryStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +22,7 @@ class QueueEntryTest {
         assertThat(entry.getToken()).isEqualTo("qt_token_1");
         assertThat(entry.getQueueId()).isEqualTo("product:100");
         assertThat(entry.getUserId()).isEqualTo(1L);
-        assertThat(entry.getStatus()).isEqualTo(QueueStatus.WAITING);
+        assertThat(entry.getStatus()).isEqualTo(QueueEntryStatus.WAITING);
         assertThat(entry.getSequence()).isEqualTo(10L);
         assertThat(entry.getEnteredAt()).isEqualTo(now);
         assertThat(entry.getActivatedAt()).isNull();
@@ -44,7 +44,7 @@ class QueueEntryTest {
 
         entry.activate(activatedAt, expiresAt);
 
-        assertThat(entry.getStatus()).isEqualTo(QueueStatus.ACTIVE);
+        assertThat(entry.getStatus()).isEqualTo(QueueEntryStatus.ACTIVE);
         assertThat(entry.getActivatedAt()).isEqualTo(activatedAt);
         assertThat(entry.getExpiresAt()).isEqualTo(expiresAt);
         assertThat(entry.getLastUpdatedAt()).isEqualTo(activatedAt);
@@ -94,7 +94,7 @@ class QueueEntryTest {
 
         entry.expire(expiredAt);
 
-        assertThat(entry.getStatus()).isEqualTo(QueueStatus.EXPIRED);
+        assertThat(entry.getStatus()).isEqualTo(QueueEntryStatus.EXPIRED);
         assertThat(entry.getLastUpdatedAt()).isEqualTo(expiredAt);
         assertThat(entry.isTerminal()).isTrue();
     }
@@ -120,7 +120,7 @@ class QueueEntryTest {
 
         entry.cancel(cancelledAt);
 
-        assertThat(entry.getStatus()).isEqualTo(QueueStatus.CANCELLED);
+        assertThat(entry.getStatus()).isEqualTo(QueueEntryStatus.CANCELLED);
         assertThat(entry.getLastUpdatedAt()).isEqualTo(cancelledAt);
         assertThat(entry.isTerminal()).isTrue();
     }
@@ -138,7 +138,7 @@ class QueueEntryTest {
 
         entry.cancel(cancelledAt);
 
-        assertThat(entry.getStatus()).isEqualTo(QueueStatus.CANCELLED);
+        assertThat(entry.getStatus()).isEqualTo(QueueEntryStatus.CANCELLED);
         assertThat(entry.getLastUpdatedAt()).isEqualTo(cancelledAt);
         assertThat(entry.isTerminal()).isTrue();
     }

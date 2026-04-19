@@ -1,6 +1,6 @@
 package com.queue.application.dto;
 
-import com.queue.domain.model.QueueEntry;
+import com.queue.domain.model.EnqueueDecision;
 
 import java.time.Instant;
 
@@ -9,19 +9,21 @@ public record EnterQueueResult(
         String queueId,
         Long userId,
         String status,
+        String outcome,
         Long position,
         Instant enteredAt,
         Instant expiresAt
 ) {
-    public static EnterQueueResult of(QueueEntry entry, Long position) {
+    public static EnterQueueResult of(EnqueueDecision decision, Long position) {
         return new EnterQueueResult(
-                entry.getToken(),
-                entry.getQueueId(),
-                entry.getUserId(),
-                entry.getStatus().name(),
+                decision.entry().getToken(),
+                decision.entry().getQueueId(),
+                decision.entry().getUserId(),
+                decision.entry().getStatus().name(),
+                decision.outcome().name(),
                 position,
-                entry.getEnteredAt(),
-                entry.getExpiresAt()
+                decision.entry().getEnteredAt(),
+                decision.entry().getExpiresAt()
         );
     }
 }

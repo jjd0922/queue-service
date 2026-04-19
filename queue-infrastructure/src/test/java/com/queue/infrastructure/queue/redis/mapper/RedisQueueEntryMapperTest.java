@@ -1,7 +1,7 @@
 package com.queue.infrastructure.queue.redis.mapper;
 
 import com.queue.domain.model.QueueEntry;
-import com.queue.domain.model.QueueStatus;
+import com.queue.domain.model.QueueEntryStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -77,7 +77,7 @@ class RedisQueueEntryMapperTest {
         assertThat(entry.getToken()).isEqualTo("qt_token_1");
         assertThat(entry.getQueueId()).isEqualTo("product:100");
         assertThat(entry.getUserId()).isEqualTo(1L);
-        assertThat(entry.getStatus()).isEqualTo(QueueStatus.WAITING);
+        assertThat(entry.getStatus()).isEqualTo(QueueEntryStatus.WAITING);
         assertThat(entry.getSequence()).isEqualTo(10L);
         assertThat(entry.getEnteredAt()).isEqualTo(now);
         assertThat(entry.getActivatedAt()).isNull();
@@ -108,7 +108,7 @@ class RedisQueueEntryMapperTest {
         assertThat(entry.getToken()).isEqualTo("qt_token_1");
         assertThat(entry.getQueueId()).isEqualTo("product:100");
         assertThat(entry.getUserId()).isEqualTo(1L);
-        assertThat(entry.getStatus()).isEqualTo(QueueStatus.ACTIVE);
+        assertThat(entry.getStatus()).isEqualTo(QueueEntryStatus.ACTIVE);
         assertThat(entry.getSequence()).isEqualTo(10L);
         assertThat(entry.getEnteredAt()).isEqualTo(enteredAt);
         assertThat(entry.getActivatedAt()).isEqualTo(activatedAt);

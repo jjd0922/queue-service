@@ -12,7 +12,7 @@ public class QueueEntry {
     private final String queueId;
     private final Long userId;
 
-    private QueueStatus status;
+    private QueueEntryStatus status;
     private final Long sequence;
 
     private final Instant enteredAt;
@@ -24,7 +24,7 @@ public class QueueEntry {
             String token,
             String queueId,
             Long userId,
-            QueueStatus status,
+            QueueEntryStatus status,
             Long sequence,
             Instant enteredAt,
             Instant activatedAt,
@@ -50,7 +50,7 @@ public class QueueEntry {
                 token,
                 queueId,
                 userId,
-                QueueStatus.WAITING,
+                QueueEntryStatus.WAITING,
                 sequence,
                 now,
                 null,
@@ -63,7 +63,7 @@ public class QueueEntry {
             String token,
             String queueId,
             Long userId,
-            QueueStatus status,
+            QueueEntryStatus status,
             Long sequence,
             Instant enteredAt,
             Instant activatedAt,
@@ -84,7 +84,7 @@ public class QueueEntry {
     }
 
     public void activate(Instant now, Instant newExpiresAt) {
-        if (this.status != QueueStatus.WAITING) {
+        if (this.status != QueueEntryStatus.WAITING) {
             throw new IllegalStateException("WAITING 상태만 ACTIVE 로 전환할 수 있습니다.");
         }
         Objects.requireNonNull(now, "now must not be null");
@@ -94,19 +94,19 @@ public class QueueEntry {
             throw new IllegalArgumentException("expiresAt must be after now");
         }
 
-        this.status = QueueStatus.ACTIVE;
+        this.status = QueueEntryStatus.ACTIVE;
         this.activatedAt = now;
         this.expiresAt = newExpiresAt;
         this.lastUpdatedAt = now;
     }
 
     public void expire(Instant now) {
-        if (this.status != QueueStatus.ACTIVE) {
+        if (this.status != QueueEntryStatus.ACTIVE) {
             throw new IllegalStateException("ACTIVE 상태만 EXPIRED 로 전환할 수 있습니다.");
         }
         Objects.requireNonNull(now, "now must not be null");
 
-        this.status = QueueStatus.EXPIRED;
+        this.status = QueueEntryStatus.EXPIRED;
         this.lastUpdatedAt = now;
     }
 
@@ -116,20 +116,20 @@ public class QueueEntry {
         }
         Objects.requireNonNull(now, "now must not be null");
 
-        this.status = QueueStatus.CANCELLED;
+        this.status = QueueEntryStatus.CANCELLED;
         this.lastUpdatedAt = now;
     }
 
     public boolean isWaiting() {
-        return this.status == QueueStatus.WAITING;
+        return this.status == QueueEntryStatus.WAITING;
     }
 
     public boolean isActive() {
-        return this.status == QueueStatus.ACTIVE;
+        return this.status == QueueEntryStatus.ACTIVE;
     }
 
     public boolean isTerminal() {
-        return this.status == QueueStatus.EXPIRED || this.status == QueueStatus.CANCELLED;
+        return this.status == QueueEntryStatus.EXPIRED || this.status == QueueEntryStatus.CANCELLED;
     }
 
     public boolean isExpiredAt(Instant now) {
@@ -149,7 +149,7 @@ public class QueueEntry {
     }
 
     private static void validateState(
-            QueueStatus status,
+            QueueEntryStatus status,
             Long sequence,
             Instant enteredAt,
             Instant activatedAt,
@@ -168,7 +168,7 @@ public class QueueEntry {
             throw new IllegalArgumentException("lastUpdatedAt must not be null");
         }
 
-        if ((status == QueueStatus.ACTIVE || status == QueueStatus.EXPIRED)) {
+        if ((status == QueueEntryStatus.ACTIVE || status == QueueEntryStatus.EXPIRED)) {
             if (activatedAt == null) {
                 throw new IllegalArgumentException("activatedAt must not be null when status is ACTIVE or EXPIRED");
             }

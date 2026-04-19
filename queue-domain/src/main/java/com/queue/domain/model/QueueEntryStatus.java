@@ -1,6 +1,6 @@
 package com.queue.domain.model;
 
-public enum QueueStatus {
+public enum QueueEntryStatus {
     WAITING,
     ACTIVE,
     EXPIRED,
