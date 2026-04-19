@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 @Component
@@ -25,6 +27,7 @@ public class KafkaQueueLifecycleAuditConsumer {
     private final QueueKafkaProperties queueKafkaProperties;
     private final QueueLifecycleConsumerMetrics queueLifecycleConsumerMetrics;
     private final QueueLifecycleAuditCommandMapper mapper;
+    private final ConcurrentMap<TopicPartition, Long> lagSampledAtByPartition = new ConcurrentHashMap<>();
 
     @KafkaListener(
             topics = "#{@queueKafkaProperties.lifecycleTopic}",
@@ -82,6 +85,9 @@ public class KafkaQueueLifecycleAuditConsumer {
     ) {
         try {
             TopicPartition topicPartition = new TopicPartition(record.topic(), record.partition());
+            if (!shouldSampleLag(topicPartition)) {
+                return;
+            }
             Map<TopicPartition, Long> endOffsets = consumer.endOffsets(Set.of(topicPartition));
             long endOffset = endOffsets.getOrDefault(topicPartition, record.offset() + 1L);
             long lag = Math.max(endOffset - record.offset() - 1L, 0L);
@@ -94,6 +100,17 @@ public class KafkaQueueLifecycleAuditConsumer {
         } catch (Exception e) {
             log.debug("failed to compute consumer lag. topic={}, partition={}", record.topic(), record.partition(), e);
         }
+    }
+
+    private boolean shouldSampleLag(TopicPartition topicPartition) {
+        long now = System.currentTimeMillis();
+        long intervalMs = Math.max(queueKafkaProperties.getLagSampleIntervalMs(), 0L);
+        Long lastSampledAt = lagSampledAtByPartition.get(topicPartition);
+        if (lastSampledAt == null || now - lastSampledAt >= intervalMs) {
+            lagSampledAtByPartition.put(topicPartition, now);
+            return true;
+        }
+        return false;
     }
 
     private String resolveTraceId(QueueLifecycleEventMessage message) {

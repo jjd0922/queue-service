@@ -10,6 +10,7 @@ public class QueueKafkaProperties {
     private String lifecycleConsumerGroup = "queue-lifecycle-audit-v1";
     private int consumerMaxAttempts = 3;
     private long consumerBackoffMs = 1000;
+    private long lagSampleIntervalMs = 5000;
 
     public String getLifecycleTopic() {
         return lifecycleTopic;
@@ -49,6 +50,14 @@ public class QueueKafkaProperties {
 
     public void setConsumerBackoffMs(long consumerBackoffMs) {
         this.consumerBackoffMs = consumerBackoffMs;
+    }
+
+    public long getLagSampleIntervalMs() {
+        return lagSampleIntervalMs;
+    }
+
+    public void setLagSampleIntervalMs(long lagSampleIntervalMs) {
+        this.lagSampleIntervalMs = lagSampleIntervalMs;
     }
 
     public String resolveLifecycleDltTopic() {

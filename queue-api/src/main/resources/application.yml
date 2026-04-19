@@ -57,6 +57,7 @@ queue:
     lifecycle-dlt-topic: ${QUEUE_KAFKA_DLT_TOPIC:queue.lifecycle.v1.dlt}
     consumer-max-attempts: ${QUEUE_KAFKA_CONSUMER_MAX_ATTEMPTS:3}
     consumer-backoff-ms: ${QUEUE_KAFKA_CONSUMER_BACKOFF_MS:1000}
+    lag-sample-interval-ms: ${QUEUE_KAFKA_LAG_SAMPLE_INTERVAL_MS:5000}
 
   audit:
     retention:
