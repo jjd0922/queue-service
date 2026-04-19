@@ -17,7 +17,8 @@ public class KafkaQueueLifecycleAuditConsumer {
 
     @KafkaListener(
             topics = "#{@queueKafkaProperties.lifecycleTopic}",
-            groupId = "${queue.kafka.lifecycle-consumer-group:queue-lifecycle-audit-v1}"
+            groupId = "#{@queueKafkaProperties.lifecycleConsumerGroup}",
+            containerFactory = "queueLifecycleKafkaListenerContainerFactory"
     )
     public void consume(QueueLifecycleEventMessage message) {
         RecordQueueLifecycleAuditCommand command = mapper.map(message);
