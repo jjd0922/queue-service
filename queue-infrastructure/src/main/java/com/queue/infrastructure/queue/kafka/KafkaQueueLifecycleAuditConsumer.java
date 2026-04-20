@@ -30,8 +30,8 @@ public class KafkaQueueLifecycleAuditConsumer {
     private final ConcurrentMap<TopicPartition, Long> lagSampledAtByPartition = new ConcurrentHashMap<>();
 
     @KafkaListener(
-            topics = "#{@queueKafkaProperties.lifecycleTopic}",
-            groupId = "#{@queueKafkaProperties.lifecycleConsumerGroup}",
+            topics = "${queue.kafka.lifecycle-topic:queue.lifecycle.v1}",
+            groupId = "${queue.kafka.lifecycle-consumer-group:queue-lifecycle-audit-v1}",
             containerFactory = "queueLifecycleKafkaListenerContainerFactory"
     )
     public void consume(

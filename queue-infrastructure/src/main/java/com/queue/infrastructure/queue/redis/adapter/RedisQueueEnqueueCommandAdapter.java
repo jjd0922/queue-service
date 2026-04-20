@@ -7,22 +7,31 @@ import com.queue.domain.model.EnqueueOutcome;
 import com.queue.domain.model.QueueEntry;
 import com.queue.domain.model.QueueEntryStatus;
 import com.queue.infrastructure.queue.redis.generator.RedisQueueKeyGenerator;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-@RequiredArgsConstructor
 @Component
 public class RedisQueueEnqueueCommandAdapter implements QueueEnqueueCommandPort {
 
     private final StringRedisTemplate stringRedisTemplate;
     private final RedisScript<List> enqueueOrGetExistingScript;
     private final RedisQueueKeyGenerator keyGenerator;
+
+    public RedisQueueEnqueueCommandAdapter(
+            StringRedisTemplate stringRedisTemplate,
+            @Qualifier("enqueueOrGetExistingScript") RedisScript<List> enqueueOrGetExistingScript,
+            RedisQueueKeyGenerator keyGenerator
+    ) {
+        this.stringRedisTemplate = stringRedisTemplate;
+        this.enqueueOrGetExistingScript = enqueueOrGetExistingScript;
+        this.keyGenerator = keyGenerator;
+    }
 
     @Override
     public EnqueueDecision enqueueOrGetExisting(EnqueueCommand request) {

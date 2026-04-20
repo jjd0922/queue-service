@@ -5,7 +5,7 @@ import com.queue.application.dto.ExpireResult;
 import com.queue.application.port.out.QueueExpirationCommandPort;
 import com.queue.domain.model.QueueEntryStatus;
 import com.queue.infrastructure.queue.redis.generator.RedisQueueKeyGenerator;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
@@ -13,13 +13,22 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Component
 public class RedisQueueExpirationCommandAdapter implements QueueExpirationCommandPort {
 
     private final StringRedisTemplate stringRedisTemplate;
     private final RedisScript<Long> expireActiveEntriesScript;
     private final RedisQueueKeyGenerator keyGenerator;
+
+    public RedisQueueExpirationCommandAdapter(
+            StringRedisTemplate stringRedisTemplate,
+            @Qualifier("expireActiveEntriesScript") RedisScript<Long> expireActiveEntriesScript,
+            RedisQueueKeyGenerator keyGenerator
+    ) {
+        this.stringRedisTemplate = stringRedisTemplate;
+        this.expireActiveEntriesScript = expireActiveEntriesScript;
+        this.keyGenerator = keyGenerator;
+    }
 
     @Override
     public ExpireResult expireActiveEntries(ExpireCommand request) {

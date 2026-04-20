@@ -7,7 +7,7 @@ import com.queue.domain.model.QueueEntry;
 import com.queue.domain.model.QueueEntryStatus;
 import com.queue.infrastructure.queue.redis.generator.RedisQueueKeyGenerator;
 import com.queue.infrastructure.queue.redis.mapper.RedisQueueEntryMapper;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Component
 public class RedisQueuePromotionCommandAdapter implements QueuePromotionCommandPort {
 
@@ -23,6 +22,18 @@ public class RedisQueuePromotionCommandAdapter implements QueuePromotionCommandP
     private final RedisScript<List> promoteWaitingEntriesScript;
     private final RedisQueueKeyGenerator keyGenerator;
     private final RedisQueueEntryMapper redisQueueEntryMapper;
+
+    public RedisQueuePromotionCommandAdapter(
+            StringRedisTemplate stringRedisTemplate,
+            @Qualifier("promoteWaitingEntriesScript") RedisScript<List> promoteWaitingEntriesScript,
+            RedisQueueKeyGenerator keyGenerator,
+            RedisQueueEntryMapper redisQueueEntryMapper
+    ) {
+        this.stringRedisTemplate = stringRedisTemplate;
+        this.promoteWaitingEntriesScript = promoteWaitingEntriesScript;
+        this.keyGenerator = keyGenerator;
+        this.redisQueueEntryMapper = redisQueueEntryMapper;
+    }
 
 
     @Override
