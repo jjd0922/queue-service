@@ -1,4 +1,4 @@
-package com.queue.infrastructure.queue.kafka;
+package com.queue.infrastructure.queue.kafka.adapter;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

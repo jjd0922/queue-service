@@ -1,6 +1,7 @@
-package com.queue.infrastructure.queue.kafka;
+package com.queue.infrastructure.queue.kafka.mapper;
 
 import com.queue.domain.event.QueueLifecycleEvent;
+import com.queue.infrastructure.queue.kafka.model.QueueLifecycleEventMessage;
 import org.springframework.stereotype.Component;
 
 @Component

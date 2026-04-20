@@ -1,4 +1,4 @@
-package com.queue.infrastructure.queue.kafka;
+package com.queue.infrastructure.queue.kafka.metrics;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;

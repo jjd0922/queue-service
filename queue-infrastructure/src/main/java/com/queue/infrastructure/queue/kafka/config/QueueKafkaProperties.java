@@ -1,4 +1,4 @@
-package com.queue.infrastructure.queue.kafka;
+package com.queue.infrastructure.queue.kafka.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

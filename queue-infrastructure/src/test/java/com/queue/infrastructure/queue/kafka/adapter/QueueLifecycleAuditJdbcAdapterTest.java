@@ -1,4 +1,4 @@
-package com.queue.infrastructure.queue.kafka;
+package com.queue.infrastructure.queue.kafka.adapter;
 
 import com.queue.application.dto.RecordQueueLifecycleAuditCommand;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,4 +1,4 @@
-package com.queue.infrastructure.queue.kafka;
+package com.queue.infrastructure.queue.kafka.config;
 
 import org.junit.jupiter.api.Test;
 

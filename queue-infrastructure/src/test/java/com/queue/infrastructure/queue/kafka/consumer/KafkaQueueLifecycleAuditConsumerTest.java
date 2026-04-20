@@ -1,7 +1,11 @@
-package com.queue.infrastructure.queue.kafka;
+package com.queue.infrastructure.queue.kafka.consumer;
 
 import com.queue.application.dto.RecordQueueLifecycleAuditCommand;
 import com.queue.application.port.in.RecordQueueLifecycleAuditUseCase;
+import com.queue.infrastructure.queue.kafka.config.QueueKafkaProperties;
+import com.queue.infrastructure.queue.kafka.mapper.QueueLifecycleAuditCommandMapper;
+import com.queue.infrastructure.queue.kafka.metrics.QueueLifecycleConsumerMetrics;
+import com.queue.infrastructure.queue.kafka.model.QueueLifecycleEventMessage;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;

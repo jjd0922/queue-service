@@ -1,4 +1,4 @@
-package com.queue.infrastructure.queue.kafka;
+package com.queue.infrastructure.queue.kafka.worker;
 
 import com.queue.application.dto.PurgeQueueLifecycleAuditCommand;
 import com.queue.application.port.in.PurgeQueueLifecycleAuditUseCase;

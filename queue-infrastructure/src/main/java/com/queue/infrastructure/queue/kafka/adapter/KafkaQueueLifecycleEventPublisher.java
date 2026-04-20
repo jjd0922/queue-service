@@ -1,7 +1,10 @@
-package com.queue.infrastructure.queue.kafka;
+package com.queue.infrastructure.queue.kafka.adapter;
 
 import com.queue.application.port.out.QueueLifecycleEventPort;
 import com.queue.domain.event.QueueLifecycleEvent;
+import com.queue.infrastructure.queue.kafka.config.QueueKafkaProperties;
+import com.queue.infrastructure.queue.kafka.mapper.QueueLifecycleEventMessageMapper;
+import com.queue.infrastructure.queue.kafka.model.QueueLifecycleEventMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

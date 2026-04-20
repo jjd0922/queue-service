@@ -1,4 +1,4 @@
-package com.queue.infrastructure.queue.kafka;
+package com.queue.infrastructure.queue.kafka.adapter;
 
 import com.queue.application.port.out.QueueLifecycleAuditManagementPort;
 import lombok.RequiredArgsConstructor;

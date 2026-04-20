@@ -1,7 +1,11 @@
-package com.queue.infrastructure.queue.kafka;
+package com.queue.infrastructure.queue.kafka.consumer;
 
 import com.queue.application.dto.RecordQueueLifecycleAuditCommand;
 import com.queue.application.port.in.RecordQueueLifecycleAuditUseCase;
+import com.queue.infrastructure.queue.kafka.config.QueueKafkaProperties;
+import com.queue.infrastructure.queue.kafka.mapper.QueueLifecycleAuditCommandMapper;
+import com.queue.infrastructure.queue.kafka.metrics.QueueLifecycleConsumerMetrics;
+import com.queue.infrastructure.queue.kafka.model.QueueLifecycleEventMessage;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
