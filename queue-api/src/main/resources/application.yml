@@ -1,16 +1,26 @@
+server:
+  port: ${QUEUE_API_PORT:8081}
+
 spring:
   datasource:
-    url: ${QUEUE_DB_URL:jdbc:mysql://localhost:3306/queue_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    url: ${QUEUE_DB_URL:jdbc:mysql://localhost:3307/queue_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${QUEUE_DB_USERNAME:root}
     password: ${QUEUE_DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
     baseline-version: 0
+
   kafka:
-    bootstrap-servers: ${QUEUE_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${QUEUE_KAFKA_BOOTSTRAP_SERVERS:localhost:9094}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -38,35 +48,3 @@ management:
   metrics:
     tags:
       application: queue-api
-
-logging:
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} traceId=%X{traceId:-} eventId=%X{eventId:-} topic=%X{kafkaTopic:-} partition=%X{kafkaPartition:-} offset=%X{kafkaOffset:-} - %msg%n"
-
-queue:
-  worker:
-    promotion:
-      queue-id: default
-      batch-size: 50
-      max-active-count: 100
-      active-ttl-seconds: 180
-
-    expiration:
-      enabled: true
-      fixed-delay-ms: 1000
-      batch-size: 50
-
-  kafka:
-    lifecycle-topic: queue.lifecycle.v1
-    lifecycle-consumer-group: ${QUEUE_KAFKA_CONSUMER_GROUP:queue-lifecycle-audit-v1}
-    lifecycle-dlt-topic: ${QUEUE_KAFKA_DLT_TOPIC:queue.lifecycle.v1.dlt}
-    consumer-max-attempts: ${QUEUE_KAFKA_CONSUMER_MAX_ATTEMPTS:3}
-    consumer-backoff-ms: ${QUEUE_KAFKA_CONSUMER_BACKOFF_MS:1000}
-    lag-sample-interval-ms: ${QUEUE_KAFKA_LAG_SAMPLE_INTERVAL_MS:5000}
-
-  audit:
-    retention:
-      enabled: ${QUEUE_AUDIT_RETENTION_ENABLED:true}
-      fixed-delay-ms: ${QUEUE_AUDIT_RETENTION_FIXED_DELAY_MS:300000}
-      retention-days: ${QUEUE_AUDIT_RETENTION_DAYS:30}
-      batch-size: ${QUEUE_AUDIT_RETENTION_BATCH_SIZE:500}

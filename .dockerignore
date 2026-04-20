@@ -4,7 +4,6 @@ build
 **/build
 **/.gradle
 **/*.iml
-**/out
 node_modules
 .git
 .gitignore
