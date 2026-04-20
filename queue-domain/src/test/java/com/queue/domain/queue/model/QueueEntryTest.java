@@ -1,5 +1,7 @@
 package com.queue.domain.queue.model;
 
+import com.queue.domain.exception.InvalidQueueEntryStateException;
+import com.queue.domain.exception.TerminalQueueEntryException;
 import com.queue.domain.model.QueueEntry;
 import com.queue.domain.model.QueueEntryStatus;
 import org.junit.jupiter.api.DisplayName;
@@ -64,13 +66,12 @@ class QueueEntryTest {
         entry.activate(activatedAt, expiresAt);
 
         assertThatThrownBy(() -> entry.activate(activatedAt.plusSeconds(1), expiresAt.plusSeconds(1)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("WAITING")
-                .hasMessageContaining("ACTIVE");
+                .isInstanceOf(InvalidQueueEntryStateException.class)
+                .hasMessage("허용되지 않은 대기열 상태 전이입니다.");
     }
 
     @Test
-    @DisplayName("만료 시각이 활성화 시각 이후가 아니면 ACTIVE 상태로 전환할 수 없다")
+    @DisplayName("만료 시각이 현재 시각 이후가 아니면 ACTIVE 상태로 전환할 수 없다")
     void activate_fail_whenExpiresAtIsNotAfterNow() {
         Instant enteredAt = Instant.parse("2026-04-04T10:00:00Z");
         Instant activatedAt = Instant.parse("2026-04-04T10:01:00Z");
@@ -79,7 +80,7 @@ class QueueEntryTest {
 
         assertThatThrownBy(() -> entry.activate(activatedAt, activatedAt))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("expiresAt must be after now");
+                .hasMessage("만료 시각은 현재 시각보다 이후여야 합니다.");
     }
 
     @Test
@@ -107,9 +108,8 @@ class QueueEntryTest {
         QueueEntry entry = QueueEntry.enter("qt_token_1", "product:100", 1L, 10L, now);
 
         assertThatThrownBy(() -> entry.expire(now.plusSeconds(60)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("ACTIVE")
-                .hasMessageContaining("EXPIRED");
+                .isInstanceOf(InvalidQueueEntryStateException.class)
+                .hasMessage("허용되지 않은 대기열 상태 전이입니다.");
     }
 
     @Test
@@ -156,8 +156,8 @@ class QueueEntryTest {
         entry.expire(expiredAt);
 
         assertThatThrownBy(() -> entry.cancel(expiredAt.plusSeconds(1)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageMatching(".+");
+                .isInstanceOf(TerminalQueueEntryException.class)
+                .hasMessage("이미 종료된 대기열 엔트리입니다.");
     }
 
     @Test
