@@ -12,8 +12,10 @@ import org.springframework.kafka.listener.CommonErrorHandler;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.RetryListener;
 import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.util.backoff.FixedBackOff;
+import com.queue.infrastructure.queue.kafka.QueueLifecycleConsumerMetrics;
 
 @Configuration
 public class QueueKafkaConsumerConfig {
@@ -34,18 +36,38 @@ public class QueueKafkaConsumerConfig {
     @Bean
     public CommonErrorHandler queueLifecycleCommonErrorHandler(
             KafkaTemplate<Object, Object> kafkaTemplate,
-            QueueKafkaProperties queueKafkaProperties
+            QueueKafkaProperties queueKafkaProperties,
+            QueueLifecycleConsumerMetrics queueLifecycleConsumerMetrics
     ) {
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
                 kafkaTemplate,
                 (record, ex) -> dltPartition(record, queueKafkaProperties)
-        );
+        ) {
+            @Override
+            public void accept(ConsumerRecord<?, ?> record, org.apache.kafka.clients.consumer.Consumer<?, ?> consumer, Exception exception) {
+                queueLifecycleConsumerMetrics.incrementDltPublished();
+                super.accept(record, consumer, exception);
+            }
+        };
 
         long retries = Math.max(queueKafkaProperties.getConsumerMaxAttempts() - 1L, 0L);
         FixedBackOff backOff = new FixedBackOff(queueKafkaProperties.getConsumerBackoffMs(), retries);
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
         errorHandler.addNotRetryableExceptions(DeserializationException.class, IllegalArgumentException.class);
         errorHandler.setCommitRecovered(true);
+        errorHandler.setRetryListeners(new RetryListener() {
+            @Override
+            public void failedDelivery(ConsumerRecord<?, ?> record, Exception ex, int deliveryAttempt) {
+                if (deliveryAttempt > 1) {
+                    queueLifecycleConsumerMetrics.incrementRetry();
+                }
+            }
+
+            @Override
+            public void recovered(ConsumerRecord<?, ?> record, Exception ex) {
+                queueLifecycleConsumerMetrics.incrementRetryExhausted();
+            }
+        });
         return errorHandler;
     }
 
