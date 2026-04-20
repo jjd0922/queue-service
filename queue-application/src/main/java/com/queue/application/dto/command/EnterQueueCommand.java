@@ -1,4 +1,4 @@
-package com.queue.application.dto;
+package com.queue.application.dto.command;
 
 public record EnterQueueCommand(
         String queueId,

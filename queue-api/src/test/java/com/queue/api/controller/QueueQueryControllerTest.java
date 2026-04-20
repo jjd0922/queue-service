@@ -1,7 +1,7 @@
 package com.queue.api.controller;
 
-import com.queue.application.dto.GetQueueStatusQuery;
-import com.queue.application.dto.QueueStatusResult;
+import com.queue.application.dto.query.GetQueueStatusQuery;
+import com.queue.application.dto.result.QueueStatusResult;
 import com.queue.application.port.in.GetQueueStatusUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

@@ -1,6 +1,6 @@
 package com.queue.infrastructure.queue.kafka.mapper;
 
-import com.queue.application.dto.RecordQueueLifecycleAuditCommand;
+import com.queue.application.dto.command.RecordQueueLifecycleAuditCommand;
 import com.queue.infrastructure.queue.kafka.model.QueueLifecycleEventMessage;
 import org.springframework.stereotype.Component;
 

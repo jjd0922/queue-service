@@ -1,7 +1,7 @@
 package com.queue.infrastructure.queue.redis.adapter;
 
-import com.queue.application.dto.PromoteCommand;
-import com.queue.application.dto.PromoteResult;
+import com.queue.application.dto.command.PromoteCommand;
+import com.queue.application.dto.result.PromoteResult;
 import com.queue.domain.model.QueueEntryStatus;
 import com.queue.infrastructure.queue.redis.generator.RedisQueueKeyGenerator;
 import com.queue.infrastructure.queue.redis.mapper.RedisQueueEntryMapper;

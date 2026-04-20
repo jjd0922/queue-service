@@ -2,8 +2,8 @@ package com.queue.application.service;
 
 import com.queue.application.common.exception.BaseException;
 import com.queue.application.common.exception.CommonErrorCode;
-import com.queue.application.dto.GetQueueStatusQuery;
-import com.queue.application.dto.QueueStatusResult;
+import com.queue.application.dto.query.GetQueueStatusQuery;
+import com.queue.application.dto.result.QueueStatusResult;
 import com.queue.application.port.out.QueueStatusQueryPort;
 import com.queue.domain.model.QueueEntrySnapshot;
 import com.queue.domain.model.QueueEntryStatus;

@@ -1,4 +1,4 @@
-package com.queue.application.dto;
+package com.queue.application.dto.result;
 
 public record ExpireAndPromoteResult(
         String queueId,

@@ -1,6 +1,6 @@
 package com.queue.api.dto;
 
-import com.queue.application.dto.EnterQueueResult;
+import com.queue.application.dto.result.EnterQueueResult;
 
 import java.time.Instant;
 

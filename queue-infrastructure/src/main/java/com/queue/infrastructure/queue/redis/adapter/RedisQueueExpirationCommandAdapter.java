@@ -1,7 +1,7 @@
 package com.queue.infrastructure.queue.redis.adapter;
 
-import com.queue.application.dto.ExpireCommand;
-import com.queue.application.dto.ExpireResult;
+import com.queue.application.dto.command.ExpireCommand;
+import com.queue.application.dto.result.ExpireResult;
 import com.queue.application.port.out.QueueExpirationCommandPort;
 import com.queue.domain.model.QueueEntryStatus;
 import com.queue.infrastructure.queue.redis.generator.RedisQueueKeyGenerator;

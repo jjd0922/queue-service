@@ -1,6 +1,6 @@
 package com.queue.infrastructure.queue.kafka.adapter;
 
-import com.queue.application.dto.RecordQueueLifecycleAuditCommand;
+import com.queue.application.dto.command.RecordQueueLifecycleAuditCommand;
 import com.queue.application.port.out.QueueLifecycleAuditCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;

@@ -1,6 +1,6 @@
 package com.queue.infrastructure.queue.kafka.adapter;
 
-import com.queue.application.dto.RecordQueueLifecycleAuditCommand;
+import com.queue.application.dto.command.RecordQueueLifecycleAuditCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DuplicateKeyException;

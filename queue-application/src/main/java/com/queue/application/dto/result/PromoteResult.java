@@ -1,4 +1,4 @@
-package com.queue.application.dto;
+package com.queue.application.dto.result;
 
 import com.queue.domain.model.QueueEntry;
 

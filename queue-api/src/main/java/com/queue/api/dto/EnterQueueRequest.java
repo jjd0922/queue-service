@@ -1,6 +1,6 @@
 package com.queue.api.dto;
 
-import com.queue.application.dto.EnterQueueCommand;
+import com.queue.application.dto.command.EnterQueueCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

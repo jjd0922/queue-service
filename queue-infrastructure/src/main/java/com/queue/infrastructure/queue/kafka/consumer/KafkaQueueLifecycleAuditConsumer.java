@@ -1,6 +1,6 @@
 package com.queue.infrastructure.queue.kafka.consumer;
 
-import com.queue.application.dto.RecordQueueLifecycleAuditCommand;
+import com.queue.application.dto.command.RecordQueueLifecycleAuditCommand;
 import com.queue.application.port.in.RecordQueueLifecycleAuditUseCase;
 import com.queue.infrastructure.queue.kafka.config.QueueKafkaProperties;
 import com.queue.infrastructure.queue.kafka.mapper.QueueLifecycleAuditCommandMapper;

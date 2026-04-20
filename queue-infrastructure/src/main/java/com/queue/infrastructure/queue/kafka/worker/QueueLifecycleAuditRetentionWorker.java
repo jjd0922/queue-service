@@ -1,6 +1,6 @@
 package com.queue.infrastructure.queue.kafka.worker;
 
-import com.queue.application.dto.PurgeQueueLifecycleAuditCommand;
+import com.queue.application.dto.command.PurgeQueueLifecycleAuditCommand;
 import com.queue.application.port.in.PurgeQueueLifecycleAuditUseCase;
 import com.queue.infrastructure.config.QueueAuditRetentionProperties;
 import lombok.RequiredArgsConstructor;

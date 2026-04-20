@@ -1,11 +1,11 @@
 package com.queue.application.service;
 
-import com.queue.application.dto.ExpireAndPromoteCommand;
-import com.queue.application.dto.ExpireAndPromoteResult;
-import com.queue.application.dto.ExpireCommand;
-import com.queue.application.dto.ExpireResult;
-import com.queue.application.dto.PromoteCommand;
-import com.queue.application.dto.PromoteResult;
+import com.queue.application.dto.command.ExpireAndPromoteCommand;
+import com.queue.application.dto.result.ExpireAndPromoteResult;
+import com.queue.application.dto.command.ExpireCommand;
+import com.queue.application.dto.result.ExpireResult;
+import com.queue.application.dto.command.PromoteCommand;
+import com.queue.application.dto.result.PromoteResult;
 import com.queue.application.port.out.QueueExpirationCommandPort;
 import com.queue.application.port.out.QueueLifecycleEventPort;
 import com.queue.application.port.out.QueuePromotionCommandPort;

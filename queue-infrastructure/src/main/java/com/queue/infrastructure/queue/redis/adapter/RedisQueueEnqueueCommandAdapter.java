@@ -1,6 +1,6 @@
 package com.queue.infrastructure.queue.redis.adapter;
 
-import com.queue.application.dto.EnqueueCommand;
+import com.queue.application.dto.command.EnqueueCommand;
 import com.queue.application.port.out.QueueEnqueueCommandPort;
 import com.queue.domain.model.EnqueueDecision;
 import com.queue.domain.model.EnqueueOutcome;
