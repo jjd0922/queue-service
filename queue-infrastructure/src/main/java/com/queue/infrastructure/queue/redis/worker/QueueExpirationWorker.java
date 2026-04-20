@@ -1,7 +1,7 @@
 package com.queue.infrastructure.queue.redis.worker;
 
-import com.queue.application.dto.ExpireAndPromoteCommand;
-import com.queue.application.dto.ExpireAndPromoteResult;
+import com.queue.application.dto.command.ExpireAndPromoteCommand;
+import com.queue.application.dto.result.ExpireAndPromoteResult;
 import com.queue.application.port.in.ExpireAndPromoteUseCase;
 import com.queue.infrastructure.config.QueueExpirationWorkerProperties;
 import com.queue.infrastructure.config.QueuePromotionWorkerProperties;

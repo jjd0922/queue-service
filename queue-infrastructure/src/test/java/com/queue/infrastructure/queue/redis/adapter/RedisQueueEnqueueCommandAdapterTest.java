@@ -1,6 +1,6 @@
 package com.queue.infrastructure.queue.redis.adapter;
 
-import com.queue.application.dto.EnqueueCommand;
+import com.queue.application.dto.command.EnqueueCommand;
 import com.queue.application.port.out.QueueEnqueueCommandPort;
 import com.queue.domain.model.EnqueueDecision;
 import com.queue.infrastructure.config.RedisQueueScriptConfig;
@@ -14,12 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;

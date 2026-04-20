@@ -1,7 +1,7 @@
 package com.queue.api.controller;
 
 import com.queue.api.dto.QueueStatusResponse;
-import com.queue.application.dto.GetQueueStatusQuery;
+import com.queue.application.dto.query.GetQueueStatusQuery;
 import com.queue.application.port.in.GetQueueStatusUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

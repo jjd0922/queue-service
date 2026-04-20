@@ -2,7 +2,7 @@ package com.queue.api.controller;
 
 import com.queue.api.dto.EnterQueueRequest;
 import com.queue.api.dto.EnterQueueResponse;
-import com.queue.application.dto.EnterQueueResult;
+import com.queue.application.dto.result.EnterQueueResult;
 import com.queue.application.port.in.EnterQueueUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

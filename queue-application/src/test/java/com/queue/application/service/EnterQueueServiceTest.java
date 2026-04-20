@@ -1,8 +1,8 @@
 package com.queue.application.service;
 
-import com.queue.application.dto.EnqueueCommand;
-import com.queue.application.dto.EnterQueueCommand;
-import com.queue.application.dto.EnterQueueResult;
+import com.queue.application.dto.command.EnqueueCommand;
+import com.queue.application.dto.command.EnterQueueCommand;
+import com.queue.application.dto.result.EnterQueueResult;
 import com.queue.application.port.out.QueueEnqueueCommandPort;
 import com.queue.application.port.out.QueueLifecycleEventPort;
 import com.queue.application.port.out.QueueQueryPort;

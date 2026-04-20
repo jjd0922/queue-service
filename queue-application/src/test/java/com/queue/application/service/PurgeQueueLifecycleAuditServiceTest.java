@@ -1,6 +1,6 @@
 package com.queue.application.service;
 
-import com.queue.application.dto.PurgeQueueLifecycleAuditCommand;
+import com.queue.application.dto.command.PurgeQueueLifecycleAuditCommand;
 import com.queue.application.port.out.QueueLifecycleAuditManagementPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

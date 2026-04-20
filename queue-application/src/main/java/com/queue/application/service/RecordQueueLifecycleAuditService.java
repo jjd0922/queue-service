@@ -1,6 +1,6 @@
 package com.queue.application.service;
 
-import com.queue.application.dto.RecordQueueLifecycleAuditCommand;
+import com.queue.application.dto.command.RecordQueueLifecycleAuditCommand;
 import com.queue.application.port.in.RecordQueueLifecycleAuditUseCase;
 import com.queue.application.port.out.QueueLifecycleAuditCommandPort;
 import lombok.RequiredArgsConstructor;

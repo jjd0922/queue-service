@@ -1,6 +1,7 @@
 package com.queue.infrastructure.config;
 
-import com.queue.infrastructure.queue.kafka.QueueKafkaProperties;
+import com.queue.infrastructure.queue.kafka.config.QueueKafkaProperties;
+import com.queue.infrastructure.queue.kafka.metrics.QueueLifecycleConsumerMetrics;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +16,6 @@ import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.RetryListener;
 import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.util.backoff.FixedBackOff;
-import com.queue.infrastructure.queue.kafka.QueueLifecycleConsumerMetrics;
 
 @Configuration
 public class QueueKafkaConsumerConfig {

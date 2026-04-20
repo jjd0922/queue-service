@@ -1,6 +1,6 @@
 package com.queue.application.service;
 
-import com.queue.application.dto.PurgeQueueLifecycleAuditCommand;
+import com.queue.application.dto.command.PurgeQueueLifecycleAuditCommand;
 import com.queue.application.port.in.PurgeQueueLifecycleAuditUseCase;
 import com.queue.application.port.out.QueueLifecycleAuditManagementPort;
 import lombok.RequiredArgsConstructor;
