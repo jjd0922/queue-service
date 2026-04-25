@@ -37,6 +37,10 @@ spring:
     listener:
       ack-mode: record
 
+queue:
+  kafka:
+    lifecycle-topic: ${QUEUE_KAFKA_LIFECYCLE_TOPIC:queue.lifecycle.v1}
+
 management:
   endpoints:
     web:

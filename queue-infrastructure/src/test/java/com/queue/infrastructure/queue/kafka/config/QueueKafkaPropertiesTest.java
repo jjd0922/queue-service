@@ -7,6 +7,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class QueueKafkaPropertiesTest {
 
     @Test
+    void resolveLifecycleTopic_returnsDefaultTopic_whenNullOrBlank() {
+        QueueKafkaProperties properties = new QueueKafkaProperties();
+        properties.setLifecycleTopic(null);
+        assertThat(properties.resolveLifecycleTopic()).isEqualTo("queue.lifecycle.v1");
+
+        properties.setLifecycleTopic(" ");
+        assertThat(properties.resolveLifecycleTopic()).isEqualTo("queue.lifecycle.v1");
+    }
+
+    @Test
     void resolveLifecycleDltTopic_returnsConfiguredTopic_whenPresent() {
         QueueKafkaProperties properties = new QueueKafkaProperties();
         properties.setLifecycleTopic("queue.lifecycle.v1");

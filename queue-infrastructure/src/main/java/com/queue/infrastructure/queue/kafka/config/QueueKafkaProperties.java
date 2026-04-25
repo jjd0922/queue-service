@@ -5,7 +5,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "queue.kafka")
 public class QueueKafkaProperties {
 
-    private String lifecycleTopic;
+    private static final String DEFAULT_LIFECYCLE_TOPIC = "queue.lifecycle.v1";
+
+    private String lifecycleTopic = DEFAULT_LIFECYCLE_TOPIC;
     private String lifecycleDltTopic;
     private String lifecycleConsumerGroup = "queue-lifecycle-audit-v1";
     private int consumerMaxAttempts = 3;
@@ -62,8 +64,15 @@ public class QueueKafkaProperties {
 
     public String resolveLifecycleDltTopic() {
         if (lifecycleDltTopic == null || lifecycleDltTopic.isBlank()) {
-            return lifecycleTopic + ".dlt";
+            return resolveLifecycleTopic() + ".dlt";
         }
         return lifecycleDltTopic;
+    }
+
+    public String resolveLifecycleTopic() {
+        if (lifecycleTopic == null || lifecycleTopic.isBlank()) {
+            return DEFAULT_LIFECYCLE_TOPIC;
+        }
+        return lifecycleTopic;
     }
 }
