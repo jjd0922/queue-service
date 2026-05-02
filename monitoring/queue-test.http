@@ -1,0 +1,104 @@
+@host = http://localhost:8081
+@queuePath = /api/v1/queues/enter
+
+### 0. 헬스체크
+GET {{host}}/actuator/health
+
+### 1. 대기열 진입 - 1건
+POST {{host}}{{queuePath}}
+Content-Type: application/json
+
+{
+  "queueId": "product:100",
+  "userId": 1001
+}
+
+### 2. 대기열 진입 - 10건용
+POST {{host}}{{queuePath}}
+Content-Type: application/json
+
+{
+  "queueId": "product:100",
+  "userId": 1002
+}
+
+###
+POST {{host}}{{queuePath}}
+Content-Type: application/json
+
+{
+  "queueId": "product:100",
+  "userId": 1003
+}
+
+###
+POST {{host}}{{queuePath}}
+Content-Type: application/json
+
+{
+  "queueId": "product:100",
+  "userId": 1004
+}
+
+###
+POST {{host}}{{queuePath}}
+Content-Type: application/json
+
+{
+  "queueId": "product:100",
+  "userId": 1005
+}
+
+###
+POST {{host}}{{queuePath}}
+Content-Type: application/json
+
+{
+  "queueId": "product:100",
+  "userId": 1006
+}
+
+###
+POST {{host}}{{queuePath}}
+Content-Type: application/json
+
+{
+  "queueId": "product:100",
+  "userId": 1007
+}
+
+###
+POST {{host}}{{queuePath}}
+Content-Type: application/json
+
+{
+  "queueId": "product:100",
+  "userId": 1008
+}
+
+###
+POST {{host}}{{queuePath}}
+Content-Type: application/json
+
+{
+  "queueId": "product:100",
+  "userId": 1009
+}
+
+###
+POST {{host}}{{queuePath}}
+Content-Type: application/json
+
+{
+  "queueId": "product:100",
+  "userId": 1010
+}
+
+###
+POST {{host}}{{queuePath}}
+Content-Type: application/json
+
+{
+  "queueId": "product:100",
+  "userId": 1011
+}
