@@ -1,117 +1,187 @@
 # Queue Service
 
-대기열 진입/승격/만료 흐름을 Redis로 처리하고, lifecycle 이벤트를 Kafka로 발행/소비하여 Audit 이력을 저장하는 서비스.  
-운영 관측을 위해 메트릭(Prometheus)과 대시보드(Grafana), 추적 가능한 로그 포맷을 포함.
+Redis와 Kafka를 기반으로 한 대기열 서비스이다.
 
-## 1. 시스템 개요
+짧은 시간에 트래픽이 집중되는 상황에서 사용자 요청을 대기열로 흡수하고, 공정한 순번과 제한된 입장 수를 기준으로 다운스트림 시스템의 부하를 제어하는 것을 목표로 한다.
 
-핵심 흐름:
-- 사용자 요청으로 대기열 엔트리 생성 또는 기존 엔트리 조회
-- Worker가 대기열 승격/만료 배치 처리
-- lifecycle 이벤트를 Kafka로 발행
-- Consumer가 이벤트를 Audit 테이블에 멱등 저장
-- 운영 지표를 Prometheus/Grafana로 확인
+## 주요 기능
 
-주요 속성:
-- 멱등성: `event_id` 기준 중복 무시
-- 장애 대응: retry/backoff + DLT
-- 관측성: lag, 처리량, 실패율, 중복 무시 건수, 처리 지연
+- 대기열 진입
+- 사용자별 중복 진입 방지
+- 순번 기반 waiting queue 관리
+- active 사용자 수 제한
+- active 사용자 만료 처리
+- Kafka lifecycle 이벤트 발행
+- Audit Consumer 기반 이벤트 이력 저장
+- Prometheus / Grafana 기반 모니터링
+- k6 기반 부하 테스트
 
-## 2. 모듈 구조
+## Architecture
 
-- `queue-api`
-  - REST API, 요청/응답 DTO, 전역 예외 처리, trace 필터
-- `queue-application`
-  - 유스케이스, 포트(in/out), 서비스 오케스트레이션
-- `queue-domain`
-  - 엔티티/도메인 이벤트/도메인 예외
-- `queue-infrastructure`
-  - Redis/Kafka/JDBC 어댑터, Worker, 외부 연동 설정
+```mermaid
+flowchart LR
+    U[Client] --> API[Queue API]
+    API --> R[(Redis)]
+    API --> K[(Kafka)]
 
-## 3. 기술 스택
+    W[Queue Worker] --> R
+    W --> K
 
-- Java 17, Spring Boot 3.x
-- Redis, Kafka(KRaft), MySQL 8
-- Flyway
-- Micrometer + Prometheus
+    K --> C[Lifecycle Audit Consumer]
+    C --> DB[(MySQL Audit History)]
+
+    P[Prometheus] --> API
+    G[Grafana] --> P
+```
+
+## Tech Stack
+
+- Java 17
+- Spring Boot 3.3
+- Gradle
+- Redis
+- Kafka
+- MySQL
+- Prometheus
 - Grafana
+- k6
 - Docker Compose
 
-## 4. 로컬 실행 가이드
+## API
 
-사전 조건:
-- Docker Desktop 실행
-- Docker Compose V2 활성화
+### 대기열 진입
 
-실행:
-```powershell
-docker compose down -v
-docker compose up -d --build
+```http
+POST /api/v1/queues/enter
 ```
 
-접속 정보:
-- API: `http://localhost:8081`
-- Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3000` (`admin/admin`)
+Request:
+
+```json
+{
+  "queueId": "product:100",
+  "userId": 100000
+}
+```
+
+Response:
+
+```json
+{
+  "token": "...",
+  "queueId": "product:100",
+  "userId": 100000,
+  "status": "WAITING",
+  "position": 1,
+  "enteredAt": "...",
+  "expiresAt": null
+}
+```
+
+### 대기열 상태 조회
+
+```http
+GET /api/v1/queues/{queueName}/entries/{queueToken}
+```
+
+## Queue Status
+
+현재 구현 기준 상태값은 다음과 같다.
+
+- `WAITING`
+- `ACTIVE`
+- `EXPIRED`
+- `CANCELLED`
+
+`ADMITTED`는 상태값이 아니라 Kafka lifecycle 이벤트 타입으로 사용한다.
+
+## Redis Key
+
+```text
+queue:sequence:{queueId}
+queue:waiting:{queueId}
+queue:active:{queueId}
+queue:active-expiry:{queueId}
+queue:entry:{token}
+queue:user-index:{queueId}:{userId}
+```
+
+## Kafka
+
+Topic:
+
+```text
+queue.lifecycle.v1
+```
+
+Event Types:
+
+```text
+ENTERED
+ADMITTED
+EXPIRED
+```
+
+## Local Run
+
+### 1. 인프라 실행
+
+```powershell
+docker compose up -d
+```
+
+실행되는 인프라:
+
 - MySQL: `localhost:3307`
 - Redis: `localhost:6379`
-- Kafka(호스트 실행 앱): `localhost:9094`
-- Kafka(컨테이너 간): `kafka:9092`
+- Kafka: `localhost:9094`
+- Prometheus: `localhost:9090`
+- Grafana: `localhost:3000`
 
-## 5. 로컬 앱 직접 실행 시 환경 변수
-
-```powershell
-$env:QUEUE_API_PORT="8081"
-$env:QUEUE_DB_URL="jdbc:mysql://localhost:3307/queue_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-$env:QUEUE_DB_USERNAME="root"
-$env:QUEUE_DB_PASSWORD="root"
-$env:QUEUE_KAFKA_BOOTSTRAP_SERVERS="localhost:9094"
-$env:QUEUE_KAFKA_CONSUMER_GROUP="queue-lifecycle-audit-v1"
-```
-
-## 6. 기능 확인 예시
+### 2. API 실행
 
 ```powershell
-curl -X POST "http://localhost:8081/api/v1/queues/enter" `
-  -H "Content-Type: application/json" `
-  -d "{\"queueId\":\"default\",\"userId\":1001}"
+.\gradlew.bat :queue-api:bootRun
 ```
 
-확인 포인트:
-- 응답의 `token`, `status`, `outcome`
-- Consumer 로그의 `traceId`, `eventId`
-- MySQL audit 적재 여부
+API 기본 주소:
 
-## 7. 운영 관측 가이드
+```text
+http://localhost:8081
+```
 
-Prometheus scrape endpoint:
-- `http://localhost:8081/actuator/prometheus`
+Health Check:
 
-핵심 메트릭:
-- lag: `queue_lifecycle_consumer_lag`
-- 처리량: `queue_lifecycle_consumer_consumed_total`
-- 성공/실패: `queue_lifecycle_consumer_success_total`, `queue_lifecycle_consumer_failure_total`
-- 중복 무시: `queue_lifecycle_consumer_duplicate_ignored_total`
-- 재시도: `queue_lifecycle_consumer_retry_total`, `queue_lifecycle_consumer_retry_exhausted_total`
-- DLT: `queue_lifecycle_consumer_dlt_published_total`
-- 처리 지연: `queue_lifecycle_consumer_processing_latency`
+```powershell
+Invoke-RestMethod http://localhost:8081/actuator/health
+```
 
-Grafana:
-- 기본 대시보드: `Queue Lifecycle Observability`
-- 권장 확인 순서: 처리량 -> 실패율 -> lag -> 중복 무시
+## Load Test
 
-## 8. 데이터/스키마 관리
+k6를 사용해 대기열 진입 API를 테스트한다.
 
-- Flyway 기반 마이그레이션 적용
-- 경로: `queue-api/src/main/resources/db/migration`
+```powershell
+.\monitoring\k6\run-k6.ps1 -Scenario smoke
+.\monitoring\k6\run-k6.ps1 -Scenario load
+.\monitoring\k6\run-k6.ps1 -Scenario stress
+.\monitoring\k6\run-k6.ps1 -Scenario spike
+```
 
-## 9. 장애 대응 체크리스트
+PowerShell 실행 정책으로 막힐 경우:
 
-- `Unknown database 'queue_db'`
-  - DB 포트/URL이 `3307` 기준인지 확인
-- Kafka `UnknownHostException: kafka`
-  - 로컬 실행 시 `localhost:9094` 사용 여부 확인
-- `Port already in use`
-  - API 기본 포트 `8081` 충돌 여부 확인
-- Prometheus 수집 실패
-  - `targets`에서 `queue-api`가 `UP`인지 확인
+```powershell
+powershell -ExecutionPolicy Bypass -File .\monitoring\k6\run-k6.ps1 -Scenario smoke
+```
+
+## Monitoring
+
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000`
+- Grafana Login: `admin / admin`
+
+## Documentation
+
+상세 설계, 모니터링 구성, 부하 테스트 결과는 Notion 문서에 정리했다.
+
+- [대기열 시스템 상세 문서](https://www.notion.so/336d2aef6d31809097ced11a680d9b9e)
+- [Prometheus + Grafana 기반 모니터링 문서](https://www.notion.so/Prometheus-Grafana-354d2aef6d3180d6891bf678be1eb58c)

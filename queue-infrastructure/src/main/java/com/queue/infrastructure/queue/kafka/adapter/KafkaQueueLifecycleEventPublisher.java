@@ -24,7 +24,7 @@ public class KafkaQueueLifecycleEventPublisher implements QueueLifecycleEventPor
         QueueLifecycleEventMessage message = mapper.map(event);
 
         kafkaTemplate.send(
-                queueKafkaProperties.getLifecycleTopic(),
+                queueKafkaProperties.resolveLifecycleTopic(),
                 event.getQueueToken(),
                 message
         ).whenComplete((result, throwable) -> {

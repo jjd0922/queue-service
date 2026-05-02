@@ -37,6 +37,10 @@ spring:
     listener:
       ack-mode: record
 
+queue:
+  kafka:
+    lifecycle-topic: ${QUEUE_KAFKA_LIFECYCLE_TOPIC:queue.lifecycle.v1}
+
 management:
   endpoints:
     web:
@@ -48,3 +52,8 @@ management:
   metrics:
     tags:
       application: queue-api
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+      slo:
+        "[http.server.requests]": 100ms,300ms,500ms,1s,3s
