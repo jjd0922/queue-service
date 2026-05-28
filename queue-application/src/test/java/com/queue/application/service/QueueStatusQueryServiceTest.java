@@ -35,7 +35,7 @@ class QueueStatusQueryServiceTest {
     class GetQueueStatus {
 
         @Test
-        @DisplayName("대기 중인 토큰이면 순번과 앞 대기 인원을 반환한다")
+        @DisplayName("대기 중인 토큰이면 순번과 앞선 대기 인원을 반환한다")
         void returnsWaitingStatusWithPosition() {
             // given
             String queueName = "concert-queue";
@@ -108,6 +108,80 @@ class QueueStatusQueryServiceTest {
         }
 
         @Test
+        @DisplayName("만료 상태 토큰이면 위치 정보 없이 EXPIRED 상태를 반환한다")
+        void returnsExpiredStatus() {
+            // given
+            String queueName = "concert-queue";
+            String token = "token-3";
+            Instant enteredAt = Instant.parse("2026-04-06T10:00:00Z");
+            Instant activatedAt = Instant.parse("2026-04-06T10:05:00Z");
+            Instant expiresAt = Instant.parse("2026-04-06T10:15:00Z");
+
+            QueueEntrySnapshot snapshot = new QueueEntrySnapshot(
+                    token,
+                    QueueEntryStatus.EXPIRED,
+                    enteredAt,
+                    activatedAt,
+                    expiresAt
+            );
+
+            given(queueStatusQueryPort.findEntry(token)).willReturn(Optional.of(snapshot));
+            given(queueStatusQueryPort.isActive(queueName, token)).willReturn(false);
+            given(queueStatusQueryPort.findWaitingPosition(queueName, token)).willReturn(Optional.empty());
+
+            // when
+            QueueStatusResult result = queueStatusQueryService.getQueueStatus(
+                    new GetQueueStatusQuery(queueName, token)
+            );
+
+            // then
+            assertThat(result.queueName()).isEqualTo(queueName);
+            assertThat(result.queueToken()).isEqualTo(token);
+            assertThat(result.status()).isEqualTo(QueueEntryStatus.EXPIRED.name());
+            assertThat(result.position()).isNull();
+            assertThat(result.aheadCount()).isNull();
+            assertThat(result.enteredAt()).isEqualTo(enteredAt);
+            assertThat(result.activatedAt()).isEqualTo(activatedAt);
+            assertThat(result.expiresAt()).isEqualTo(expiresAt);
+        }
+
+        @Test
+        @DisplayName("취소 상태 토큰이면 위치 정보 없이 CANCELLED 상태를 반환한다")
+        void returnsCancelledStatus() {
+            // given
+            String queueName = "concert-queue";
+            String token = "token-4";
+            Instant enteredAt = Instant.parse("2026-04-06T10:00:00Z");
+
+            QueueEntrySnapshot snapshot = new QueueEntrySnapshot(
+                    token,
+                    QueueEntryStatus.CANCELLED,
+                    enteredAt,
+                    null,
+                    null
+            );
+
+            given(queueStatusQueryPort.findEntry(token)).willReturn(Optional.of(snapshot));
+            given(queueStatusQueryPort.isActive(queueName, token)).willReturn(false);
+            given(queueStatusQueryPort.findWaitingPosition(queueName, token)).willReturn(Optional.empty());
+
+            // when
+            QueueStatusResult result = queueStatusQueryService.getQueueStatus(
+                    new GetQueueStatusQuery(queueName, token)
+            );
+
+            // then
+            assertThat(result.queueName()).isEqualTo(queueName);
+            assertThat(result.queueToken()).isEqualTo(token);
+            assertThat(result.status()).isEqualTo(QueueEntryStatus.CANCELLED.name());
+            assertThat(result.position()).isNull();
+            assertThat(result.aheadCount()).isNull();
+            assertThat(result.enteredAt()).isEqualTo(enteredAt);
+            assertThat(result.activatedAt()).isNull();
+            assertThat(result.expiresAt()).isNull();
+        }
+
+        @Test
         @DisplayName("엔트리가 없으면 예외를 던진다")
         void throwsExceptionWhenEntryNotFound() {
             // given
@@ -125,11 +199,11 @@ class QueueStatusQueryServiceTest {
         }
 
         @Test
-        @DisplayName("활성 상태도 아니고 대기열 순번도 없으면 예외를 던진다")
+        @DisplayName("활성 상태가 아니고 대기열 순번도 없으면 예외를 던진다")
         void throwsExceptionWhenNeitherActiveNorWaiting() {
             // given
             String queueName = "concert-queue";
-            String token = "token-3";
+            String token = "token-5";
             Instant enteredAt = Instant.parse("2026-04-06T10:00:00Z");
 
             QueueEntrySnapshot snapshot = new QueueEntrySnapshot(

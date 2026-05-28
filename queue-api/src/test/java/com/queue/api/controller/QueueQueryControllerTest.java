@@ -16,7 +16,8 @@ import java.time.Instant;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(QueueQueryController.class)
 class QueueQueryControllerTest {
@@ -98,6 +99,78 @@ class QueueQueryControllerTest {
                     .andExpect(jsonPath("$.enteredAt").value(enteredAt.toString()))
                     .andExpect(jsonPath("$.activatedAt").value(activatedAt.toString()))
                     .andExpect(jsonPath("$.expiresAt").value(expiresAt.toString()));
+        }
+
+        @Test
+        @DisplayName("만료 상태 토큰 조회에 성공하면 200과 만료 정보를 반환한다")
+        void returnsExpiredResponse() throws Exception {
+            // given
+            String queueName = "concert-queue";
+            String token = "token-3";
+            Instant enteredAt = Instant.parse("2026-04-06T10:00:00Z");
+            Instant activatedAt = Instant.parse("2026-04-06T10:05:00Z");
+            Instant expiresAt = Instant.parse("2026-04-06T10:15:00Z");
+
+            QueueStatusResult result = new QueueStatusResult(
+                    queueName,
+                    token,
+                    "EXPIRED",
+                    null,
+                    null,
+                    enteredAt,
+                    activatedAt,
+                    expiresAt
+            );
+
+            given(getQueueStatusUseCase.getQueueStatus(any(GetQueueStatusQuery.class)))
+                    .willReturn(result);
+
+            // when & then
+            mockMvc.perform(get("/api/v1/queues/{queueName}/entries/{queueToken}", queueName, token))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.queueName").value(queueName))
+                    .andExpect(jsonPath("$.queueToken").value(token))
+                    .andExpect(jsonPath("$.status").value("EXPIRED"))
+                    .andExpect(jsonPath("$.position").doesNotExist())
+                    .andExpect(jsonPath("$.aheadCount").doesNotExist())
+                    .andExpect(jsonPath("$.enteredAt").value(enteredAt.toString()))
+                    .andExpect(jsonPath("$.activatedAt").value(activatedAt.toString()))
+                    .andExpect(jsonPath("$.expiresAt").value(expiresAt.toString()));
+        }
+
+        @Test
+        @DisplayName("취소 상태 토큰 조회에 성공하면 200과 취소 정보를 반환한다")
+        void returnsCancelledResponse() throws Exception {
+            // given
+            String queueName = "concert-queue";
+            String token = "token-4";
+            Instant enteredAt = Instant.parse("2026-04-06T10:00:00Z");
+
+            QueueStatusResult result = new QueueStatusResult(
+                    queueName,
+                    token,
+                    "CANCELLED",
+                    null,
+                    null,
+                    enteredAt,
+                    null,
+                    null
+            );
+
+            given(getQueueStatusUseCase.getQueueStatus(any(GetQueueStatusQuery.class)))
+                    .willReturn(result);
+
+            // when & then
+            mockMvc.perform(get("/api/v1/queues/{queueName}/entries/{queueToken}", queueName, token))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.queueName").value(queueName))
+                    .andExpect(jsonPath("$.queueToken").value(token))
+                    .andExpect(jsonPath("$.status").value("CANCELLED"))
+                    .andExpect(jsonPath("$.position").doesNotExist())
+                    .andExpect(jsonPath("$.aheadCount").doesNotExist())
+                    .andExpect(jsonPath("$.enteredAt").value(enteredAt.toString()))
+                    .andExpect(jsonPath("$.activatedAt").doesNotExist())
+                    .andExpect(jsonPath("$.expiresAt").doesNotExist());
         }
     }
 }
