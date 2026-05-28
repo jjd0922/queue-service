@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS queue_lifecycle_outbox (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_id VARCHAR(64) NOT NULL,
+    event_type VARCHAR(32) NOT NULL,
+    queue_token VARCHAR(128) NOT NULL,
+    user_id BIGINT NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    sequence BIGINT NOT NULL,
+    occurred_at DATETIME(6) NOT NULL,
+    reason VARCHAR(255) NULL,
+    payload JSON NOT NULL,
+    publish_status VARCHAR(32) NOT NULL,
+    retry_count INT NOT NULL DEFAULT 0,
+    next_retry_at DATETIME(6) NOT NULL,
+    published_at DATETIME(6) NULL,
+    last_error_message VARCHAR(1000) NULL,
+    created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+    UNIQUE KEY uk_queue_lifecycle_outbox_event_id (event_id),
+    KEY idx_queue_lifecycle_outbox_publish_status_next_retry_at (publish_status, next_retry_at),
+    KEY idx_queue_lifecycle_outbox_queue_token (queue_token),
+    KEY idx_queue_lifecycle_outbox_created_at (created_at)
+);
