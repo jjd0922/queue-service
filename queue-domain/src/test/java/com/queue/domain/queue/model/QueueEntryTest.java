@@ -67,11 +67,11 @@ class QueueEntryTest {
 
         assertThatThrownBy(() -> entry.activate(activatedAt.plusSeconds(1), expiresAt.plusSeconds(1)))
                 .isInstanceOf(InvalidQueueEntryStateException.class)
-                .hasMessage("허용되지 않은 대기열 상태 전이입니다.");
+                .hasMessage("허용되지 않는 대기열 상태입니다.");
     }
 
     @Test
-    @DisplayName("만료 시각이 현재 시각 이후가 아니면 ACTIVE 상태로 전환할 수 없다")
+    @DisplayName("만료 시간이 현재 시간 이후가 아니면 ACTIVE 상태로 전환할 수 없다")
     void activate_fail_whenExpiresAtIsNotAfterNow() {
         Instant enteredAt = Instant.parse("2026-04-04T10:00:00Z");
         Instant activatedAt = Instant.parse("2026-04-04T10:01:00Z");
@@ -80,7 +80,7 @@ class QueueEntryTest {
 
         assertThatThrownBy(() -> entry.activate(activatedAt, activatedAt))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("만료 시각은 현재 시각보다 이후여야 합니다.");
+                .hasMessage("만료 시간은 현재 시간보다 이후여야 합니다.");
     }
 
     @Test
@@ -109,7 +109,7 @@ class QueueEntryTest {
 
         assertThatThrownBy(() -> entry.expire(now.plusSeconds(60)))
                 .isInstanceOf(InvalidQueueEntryStateException.class)
-                .hasMessage("허용되지 않은 대기열 상태 전이입니다.");
+                .hasMessage("허용되지 않는 대기열 상태입니다.");
     }
 
     @Test
@@ -161,7 +161,7 @@ class QueueEntryTest {
     }
 
     @Test
-    @DisplayName("현재 시각이 만료 시각과 같거나 이후이면 만료 상태로 판단한다")
+    @DisplayName("현재 시간이 만료 시간과 같거나 이후이면 만료 상태로 판단한다")
     void isExpiredAt_true() {
         Instant enteredAt = Instant.parse("2026-04-04T10:00:00Z");
         Instant activatedAt = Instant.parse("2026-04-04T10:01:00Z");
@@ -175,7 +175,7 @@ class QueueEntryTest {
     }
 
     @Test
-    @DisplayName("현재 시각이 만료 시각 이전이면 만료 상태가 아니다")
+    @DisplayName("현재 시간이 만료 시간 이전이면 만료 상태가 아니다")
     void isExpiredAt_false() {
         Instant enteredAt = Instant.parse("2026-04-04T10:00:00Z");
         Instant activatedAt = Instant.parse("2026-04-04T10:01:00Z");
