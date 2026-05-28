@@ -181,7 +181,7 @@ powershell -ExecutionPolicy Bypass -File .\monitoring\k6\run-k6.ps1 -Scenario sm
 
 ## Documentation
 
-상세 설계, 모니터링 구성, 부하 테스트 결과는 Notion 문서에 정리했다.
+상세 설계, 모니터링 구성, 부하 테스트 결과는 Notion 문서에 정리
 
 - [대기열 시스템 상세 문서](https://www.notion.so/336d2aef6d31809097ced11a680d9b9e)
 - [Prometheus + Grafana 기반 모니터링 문서](https://www.notion.so/Prometheus-Grafana-354d2aef6d3180d6891bf678be1eb58c)
