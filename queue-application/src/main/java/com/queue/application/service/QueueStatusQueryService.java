@@ -49,6 +49,23 @@ public class QueueStatusQueryService implements GetQueueStatusUseCase {
                         entry.activatedAt(),
                         entry.expiresAt()
                 ))
-                .orElseThrow(() -> new BaseException(CommonErrorCode.NOT_FOUND));
+                .orElseGet(() -> terminalStatusResult(query, entry));
+    }
+
+    private QueueStatusResult terminalStatusResult(GetQueueStatusQuery query, QueueEntrySnapshot entry) {
+        if (entry.status() == QueueEntryStatus.EXPIRED || entry.status() == QueueEntryStatus.CANCELLED) {
+            return new QueueStatusResult(
+                    query.queueName(),
+                    query.queueToken(),
+                    entry.status().name(),
+                    null,
+                    null,
+                    entry.enteredAt(),
+                    entry.activatedAt(),
+                    entry.expiresAt()
+            );
+        }
+
+        throw new BaseException(CommonErrorCode.NOT_FOUND);
     }
 }
