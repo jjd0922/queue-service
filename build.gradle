@@ -19,6 +19,7 @@ allprojects {
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'jacoco'
 
     java {
         toolchain {
@@ -54,9 +55,22 @@ subprojects {
 
     tasks.withType(Test).configureEach {
         useJUnitPlatform()
+        finalizedBy tasks.named('jacocoTestReport')
     }
 
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
+    }
+
+    jacoco {
+        toolVersion = '0.8.12'
+    }
+
+    tasks.named('jacocoTestReport') {
+        dependsOn tasks.named('test')
+        reports {
+            xml.required = true
+            html.required = true
+        }
     }
 }
