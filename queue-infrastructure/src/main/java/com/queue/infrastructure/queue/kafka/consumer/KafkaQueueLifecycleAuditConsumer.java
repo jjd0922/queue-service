@@ -32,6 +32,7 @@ public class KafkaQueueLifecycleAuditConsumer {
     private final QueueLifecycleConsumerMetrics queueLifecycleConsumerMetrics;
     private final QueueLifecycleAuditCommandMapper mapper;
     private final ConcurrentMap<TopicPartition, Long> lagSampledAtByPartition = new ConcurrentHashMap<>();
+    private final ConcurrentMap<TopicPartition, Long> endOffsetByPartition = new ConcurrentHashMap<>();
 
     @KafkaListener(
             topics = "${queue.kafka.lifecycle-topic:queue.lifecycle.v1}",
@@ -50,7 +51,6 @@ public class KafkaQueueLifecycleAuditConsumer {
         String traceId = resolveTraceId(message);
         bindMdc(traceId, message.getEventId(), record);
         queueLifecycleConsumerMetrics.incrementConsumed();
-        recordLag(record, consumer);
 
         try {
             RecordQueueLifecycleAuditCommand command = mapper.map(message);
@@ -73,6 +73,7 @@ public class KafkaQueueLifecycleAuditConsumer {
                 );
             }
             queueLifecycleConsumerMetrics.incrementSuccess();
+            recordLag(record, consumer);
         } catch (Exception e) {
             queueLifecycleConsumerMetrics.incrementFailure();
             log.error("queue lifecycle consume failed", e);
@@ -89,11 +90,7 @@ public class KafkaQueueLifecycleAuditConsumer {
     ) {
         try {
             TopicPartition topicPartition = new TopicPartition(record.topic(), record.partition());
-            if (!shouldSampleLag(topicPartition)) {
-                return;
-            }
-            Map<TopicPartition, Long> endOffsets = consumer.endOffsets(Set.of(topicPartition));
-            long endOffset = endOffsets.getOrDefault(topicPartition, record.offset() + 1L);
+            long endOffset = resolveEndOffset(record, consumer, topicPartition);
             long lag = Math.max(endOffset - record.offset() - 1L, 0L);
             queueLifecycleConsumerMetrics.recordLag(
                     record.topic(),
@@ -104,6 +101,21 @@ public class KafkaQueueLifecycleAuditConsumer {
         } catch (Exception e) {
             log.debug("failed to compute consumer lag. topic={}, partition={}", record.topic(), record.partition(), e);
         }
+    }
+
+    private long resolveEndOffset(
+            ConsumerRecord<String, QueueLifecycleEventMessage> record,
+            Consumer<String, QueueLifecycleEventMessage> consumer,
+            TopicPartition topicPartition
+    ) {
+        Long cachedEndOffset = endOffsetByPartition.get(topicPartition);
+        if (shouldSampleLag(topicPartition) || cachedEndOffset == null) {
+            Map<TopicPartition, Long> endOffsets = consumer.endOffsets(Set.of(topicPartition));
+            long endOffset = endOffsets.getOrDefault(topicPartition, record.offset() + 1L);
+            endOffsetByPartition.put(topicPartition, endOffset);
+            return endOffset;
+        }
+        return cachedEndOffset;
     }
 
     private boolean shouldSampleLag(TopicPartition topicPartition) {
