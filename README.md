@@ -8,9 +8,9 @@
 [![Kafka](https://img.shields.io/badge/Kafka-3.9.2-black)]()
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-blue)]()
 
-대규모 트래픽 진입 시 사용자를 공정한 순번으로 대기시키고, 제한된 active 사용자만 downstream으로 통과시키는 Spring Boot 기반 대기열 포트폴리오 프로젝트이다.
+대규모 트래픽 진입 시 사용자를 공정한 순번으로 대기시키고, 제한된 active 사용자만 downstream으로 통과시키는 Spring Boot 기반 대기열 프로젝트다.
 
-상세 흐름, 아키텍처 다이어그램, Redis 원자 처리, Outbox relay, 모니터링, 부하 테스트 기준은 [상세문서](#상세문서)를 참고한다.
+상세 흐름, 아키텍처 다이어그램, Redis 원자 처리, Outbox relay, 모니터링, 부하 테스트 기준은 [문서](#문서)를 참고한다.
 
 ## 주요 특징
 
@@ -113,7 +113,7 @@ GET /api/v1/queues/{queueName}/entries/{queueToken}
 - [Redis 자료구조와 Lua 원자 처리](docs/redis-queue-design.md)
 - [라이프사이클 Outbox와 Kafka 감사](docs/lifecycle-outbox.md)
 - [모니터링과 운영 지표](docs/monitoring.md)
-- [부하 테스트와 측정 기준](docs/load-test.md)
+- [부하 테스트와 측정 결과](docs/load-test-results.md)
 - [ADR 0001: Redis Lua 기반 원자 처리](docs/adr/0001-redis-lua-atomic-queue.md)
 - [ADR 0002: 라이프사이클 Outbox 폴링 디스패처](docs/adr/0002-lifecycle-outbox-polling-dispatcher.md)
 - [ADR 0003: 종료 상태 조회 정책](docs/adr/0003-terminal-status-query-policy.md)

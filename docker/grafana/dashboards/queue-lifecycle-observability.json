@@ -15,7 +15,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "ops"
+          "unit": "reqps"
         },
         "overrides": []
       },
@@ -26,11 +26,12 @@
         "y": 0
       },
       "id": 1,
-      "title": "Consumer Throughput (msg/s)",
+      "title": "HTTP Request Rate - POST /api/v1/queues/enter",
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(queue_lifecycle_consumer_consumed_total[1m])",
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"queue-api\", method=\"POST\", uri=\"/api/v1/queues/enter\"}[1m]))",
+          "legendFormat": "requests/sec",
           "refId": "A"
         }
       ]
@@ -42,7 +43,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "percentunit"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -53,11 +54,12 @@
         "y": 0
       },
       "id": 2,
-      "title": "Failure Rate",
+      "title": "Active API Requests - POST /api/v1/queues/enter",
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(queue_lifecycle_consumer_failure_total[5m]) / clamp_min(rate(queue_lifecycle_consumer_consumed_total[5m]), 0.0001)",
+          "expr": "sum(http_server_requests_active_seconds_gcount{application=\"queue-api\", method=\"POST\"}) or vector(0)",
+          "legendFormat": "active requests",
           "refId": "A"
         }
       ]
@@ -69,7 +71,40 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "title": "HTTP p95 / p99 Response Time - POST /api/v1/queues/enter",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application=\"queue-api\", method=\"POST\", uri=\"/api/v1/queues/enter\"}[1m])) by (le))",
+          "legendFormat": "p95",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{application=\"queue-api\", method=\"POST\", uri=\"/api/v1/queues/enter\"}[1m])) by (le))",
+          "legendFormat": "p99",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": ""
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -77,14 +112,15 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 16
       },
-      "id": 3,
-      "title": "Duplicate Ignored Total",
+      "id": 4,
+      "title": "JVM Heap Memory Used",
       "type": "timeseries",
       "targets": [
         {
-          "expr": "increase(queue_lifecycle_consumer_duplicate_ignored_total[1h])",
+          "expr": "sum(jvm_memory_used_bytes{application=\"queue-api\", area=\"heap\"})",
+          "legendFormat": "heap used",
           "refId": "A"
         }
       ]
@@ -96,7 +132,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -104,38 +140,73 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 16
       },
-      "id": 4,
-      "title": "Consumer Lag",
+      "id": 5,
+      "title": "JVM GC Pause",
       "type": "timeseries",
       "targets": [
         {
-          "expr": "queue_lifecycle_consumer_lag",
+          "expr": "sum(rate(jvm_gc_pause_seconds_sum{application=\"queue-api\"}[1m])) / clamp_min(sum(rate(jvm_gc_pause_seconds_count{application=\"queue-api\"}[1m])), 0.0001)",
+          "legendFormat": "avg pause",
+          "refId": "A"
+        },
+        {
+          "expr": "max(jvm_gc_pause_seconds_max{application=\"queue-api\"})",
+          "legendFormat": "max pause",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": ""
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 6,
+      "title": "JVM GC Count",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(jvm_gc_pause_seconds_count{application=\"queue-api\"}[1m]))",
+          "legendFormat": "gc events/sec",
           "refId": "A"
         }
       ]
     }
   ],
-  "refresh": "10s",
+  "refresh": "5s",
   "schemaVersion": 39,
   "style": "dark",
   "tags": [
     "queue",
-    "kafka",
-    "observability"
+    "http",
+    "jvm",
+    "load-test"
   ],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Queue Lifecycle Observability",
+  "title": "Queue API Load Test",
   "uid": "queue-lifecycle-observability",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
